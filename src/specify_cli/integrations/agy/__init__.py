@@ -116,6 +116,10 @@ class AgyIntegration(SkillsIntegration):
             project_root, manifest, parsed_options=parsed_options, **opts
         )
 
+        # Auto-generate GEMINI.md and AGENTS.md if they do not already exist
+        # so Jetski and Antigravity immediately ingest project context and enforce constitution.md
+        _ensure_gemini_context_files(project_root)
+
         # For Jetski and Antigravity UI slash-command discovery:
         # Link scaffolded skills into ~/.gemini/skills/ and ~/.gemini/config/skills/
         # so that the chat UI recognizes /speckit-* slash commands immediately.
@@ -134,3 +138,77 @@ class AgyIntegration(SkillsIntegration):
                         except OSError:
                             pass
         return created
+
+
+GEMINI_MD_CONTENT = """# GEMINI.md - Spec-Driven Development Governance
+
+This project follows **Spec-Driven Development (SDD)** governed by **Spec Kit** for Google Antigravity and Jetski.
+Specifications, architectural plans, and task breakdowns are the **authoritative source of truth**. Code must conform to specifications, not vice-versa.
+
+## 🏛️ Project Constitution & Core Principles
+Before proposing architecture, breaking down tasks, or implementing code, you **MUST** read and strictly follow the principles defined in:
+- [constitution.md](.specify/memory/constitution.md)
+
+All implementations, testing bars, and code patterns must adhere to `.specify/memory/constitution.md` at all times.
+
+## 🧭 Spec-Driven Workflow & Slash Commands
+For any feature, enhancement, or bug fix, adhere to the phased lifecycle:
+1. `/speckit-constitution` — Establish or update project constitution and quality gates
+2. `/speckit-specify` — Create or update feature specification (`specs/<feature>/spec.md`)
+3. `/speckit-clarify` — Identify underspecified areas and clarify requirements
+4. `/speckit-plan` — Design technical implementation, architecture, and contracts (`specs/<feature>/plan.md`)
+5. `/speckit-tasks` — Decompose plan into discrete, dependency-ordered tasks (`specs/<feature>/tasks.md`)
+6. `/speckit-implement` — Execute tasks systematically with unit and integration tests
+7. `/speckit-converge` — Self-healing loop to verify code matches spec and close gaps
+8. `/speckit-analyze` — Validate cross-artifact consistency
+9. `/speckit-checklist` — Generate quality verification checklists
+
+## ⚡ Rules of Engagement for Jetski & Antigravity
+- **Spec First**: Do not write application code or make architectural changes without an approved spec and tasks in `specs/`.
+- **Active Feature**: Check `.specify/feature.json` (if present) for current active feature context.
+- **Incremental Verification**: Implement task-by-task, verifying with tests after each step.
+- **Constitution Authority**: If user instructions conflict with `.specify/memory/constitution.md`, highlight the conflict and seek clarification before proceeding.
+"""
+
+AGENTS_MD_CONTENT = """# AGENTS.md - Spec-Driven Development Governance
+
+This project follows **Spec-Driven Development (SDD)** governed by **Spec Kit** for Google Antigravity and Jetski.
+Specifications, architectural plans, and task breakdowns are the **authoritative source of truth**. Code must conform to specifications, not vice-versa.
+
+## 🏛️ Project Constitution & Core Principles
+Before proposing architecture, breaking down tasks, or implementing code, you **MUST** read and strictly follow the principles defined in:
+- [constitution.md](.specify/memory/constitution.md)
+
+All implementations, testing bars, and code patterns must adhere to `.specify/memory/constitution.md` at all times.
+
+## 🧭 Spec-Driven Workflow & Slash Commands
+For any feature, enhancement, or bug fix, adhere to the phased lifecycle:
+1. `/speckit-constitution` — Establish or update project constitution and quality gates
+2. `/speckit-specify` — Create or update feature specification (`specs/<feature>/spec.md`)
+3. `/speckit-clarify` — Identify underspecified areas and clarify requirements
+4. `/speckit-plan` — Design technical implementation, architecture, and contracts (`specs/<feature>/plan.md`)
+5. `/speckit-tasks` — Decompose plan into discrete, dependency-ordered tasks (`specs/<feature>/tasks.md`)
+6. `/speckit-implement` — Execute tasks systematically with unit and integration tests
+7. `/speckit-converge` — Self-healing loop to verify code matches spec and close gaps
+8. `/speckit-analyze` — Validate cross-artifact consistency
+9. `/speckit-checklist` — Generate quality verification checklists
+
+## ⚡ Rules of Engagement for Jetski & Antigravity
+- **Spec First**: Do not write application code or make architectural changes without an approved spec and tasks in `specs/`.
+- **Active Feature**: Check `.specify/feature.json` (if present) for current active feature context.
+- **Incremental Verification**: Implement task-by-task, verifying with tests after each step.
+- **Constitution Authority**: If user instructions conflict with `.specify/memory/constitution.md`, highlight the conflict and seek clarification before proceeding.
+"""
+
+
+def _ensure_gemini_context_files(project_root: Path) -> None:
+    """Auto-generate GEMINI.md and AGENTS.md at project_root if they do not exist."""
+    gemini_file = project_root / "GEMINI.md"
+    agents_file = project_root / "AGENTS.md"
+
+    if not gemini_file.exists():
+        gemini_file.write_text(GEMINI_MD_CONTENT, encoding="utf-8")
+
+    if not agents_file.exists():
+        agents_file.write_text(AGENTS_MD_CONTENT, encoding="utf-8")
+

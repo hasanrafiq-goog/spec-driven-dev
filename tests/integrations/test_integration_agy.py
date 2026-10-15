@@ -16,6 +16,11 @@ class TestAgyIntegration(SkillsIntegrationTests):
     COMMANDS_SUBDIR = "skills"
     REGISTRAR_DIR = ".agents/skills"
 
+    def _expected_files(self, script_variant: str) -> list[str]:
+        files = super()._expected_files(script_variant)
+        files.extend(["AGENTS.md", "GEMINI.md"])
+        return sorted(files)
+
     def test_options_include_skills_flag(self):
         """Override inherited test: AgyIntegration should not expose a --skills flag because .agents/ is its only layout."""
         i = get_integration(self.KEY)
@@ -54,6 +59,7 @@ class TestAgyInitFlow:
                 "--script",
                 "sh",
                 "--ignore-agent-tools",
+                "--force",
             ],
         )
 
@@ -79,14 +85,110 @@ class TestAgyInitFlow:
                 "--script",
                 "sh",
                 "--ignore-agent-tools",
+                "--force",
             ],
         )
 
-        assert result.exit_code == 0
+        assert result.exit_code == 0, f"init failed: {result.output}"
         assert (
             "Warning: The .agents/ layout requires Antigravity CLI v1.0.0 or newer "
             "(or Antigravity IDE v2.0.0 or newer)." in result.stderr
         )
+
+    def test_integration_agy_creates_gemini_and_agents_md(self, tmp_path):
+        """--integration agy should create GEMINI.md and AGENTS.md with constitution reference."""
+        from typer.testing import CliRunner
+
+        from specify_cli import app
+
+        runner = CliRunner()
+        target = tmp_path / "test-proj-gemini"
+        result = runner.invoke(
+            app,
+            [
+                "init",
+                str(target),
+                "--integration",
+                "agy",
+                "--script",
+                "sh",
+                "--ignore-agent-tools",
+                "--force",
+            ],
+        )
+
+        assert result.exit_code == 0, f"init failed: {result.output}"
+        gemini_md = target / "GEMINI.md"
+        agents_md = target / "AGENTS.md"
+        assert gemini_md.exists()
+        assert agents_md.exists()
+        gemini_text = gemini_md.read_text(encoding="utf-8")
+        agents_text = agents_md.read_text(encoding="utf-8")
+        assert "constitution.md" in gemini_text
+        assert "/speckit-constitution" in gemini_text
+        assert "constitution.md" in agents_text
+        assert "/speckit-constitution" in agents_text
+
+    def test_integration_agy_preserves_existing_gemini_and_agents_md(self, tmp_path):
+        """--integration agy should preserve existing GEMINI.md and AGENTS.md without overwriting."""
+        from typer.testing import CliRunner
+
+        from specify_cli import app
+
+        target = tmp_path / "test-proj-preserve"
+        target.mkdir()
+        gemini_md = target / "GEMINI.md"
+        agents_md = target / "AGENTS.md"
+        gemini_md.write_text("# Custom GEMINI\n", encoding="utf-8")
+        agents_md.write_text("# Custom AGENTS\n", encoding="utf-8")
+
+        runner = CliRunner()
+        result = runner.invoke(
+            app,
+            [
+                "init",
+                str(target),
+                "--integration",
+                "agy",
+                "--script",
+                "sh",
+                "--ignore-agent-tools",
+                "--force",
+            ],
+        )
+
+        assert result.exit_code == 0, f"init failed: {result.output}"
+        assert gemini_md.read_text(encoding="utf-8") == "# Custom GEMINI\n"
+        assert agents_md.read_text(encoding="utf-8") == "# Custom AGENTS\n"
+
+    def test_integration_jetski_alias_creates_gemini_and_agents_md(self, tmp_path):
+        """--integration jetski alias should create GEMINI.md and AGENTS.md."""
+        from typer.testing import CliRunner
+
+        from specify_cli import app
+
+        runner = CliRunner()
+        target = tmp_path / "test-proj-jetski-alias"
+        result = runner.invoke(
+            app,
+            [
+                "init",
+                str(target),
+                "--integration",
+                "jetski",
+                "--script",
+                "sh",
+                "--ignore-agent-tools",
+            ],
+        )
+
+        assert result.exit_code == 0, f"init failed: {result.output}"
+        gemini_md = target / "GEMINI.md"
+        agents_md = target / "AGENTS.md"
+        assert gemini_md.exists()
+        assert agents_md.exists()
+        assert "constitution.md" in gemini_md.read_text(encoding="utf-8")
+        assert "constitution.md" in agents_md.read_text(encoding="utf-8")
 
 
 class TestAgyBuildExecArgs:
