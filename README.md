@@ -11,6 +11,7 @@ A modern toolkit designed to bring structured, repeatable **Spec-Driven Developm
 > *"Specifications don't serve code — code serves specifications."*
 
 Instead of raw prompts that lead to hallucination, context drift, and brittle hacks, `spec-driven-dev` inverts software development:
+
 1. **The Specification is the Source of Truth**: Requirements, invariants, and acceptance criteria are written and tested first.
 2. **Deterministic Gating**: Every phase (Constitution → Specification → Planning → Task Decomposition → Implementation → Convergence) is validated before code is produced.
 3. **Autonomous Verification**: Agents don't guess when they're done—they verify against the spec until the system converges.
@@ -20,10 +21,12 @@ Instead of raw prompts that lead to hallucination, context drift, and brittle ha
 ## ⚡ Quickstart
 
 ### 1. Prerequisites
+
 - **Python 3.11+**
 - **[uv](https://docs.astral.sh/uv/)** package manager
 
 ### 2. Install the CLI
+
 Install the tool globally using `uv`:
 
 ```bash
@@ -31,6 +34,7 @@ uv tool install git+https://github.com/hasanrafiq-goog/spec-driven-dev.git
 ```
 
 ### 3. Initialize in Any Project Directory
+
 Navigate to your project (or an empty folder) and initialize it for your agent:
 
 ```bash
@@ -104,17 +108,20 @@ my-project/
 ## 🛠️ CLI Utilities
 
 Check environment health:
+
 ```bash
 specify check
 ```
 
 Manage extensions:
+
 ```bash
 specify extension list
 specify extension add bug
 ```
 
 Inspect registered artifacts:
+
 ```bash
 specify artifact list
 ```
@@ -122,4 +129,5 @@ specify artifact list
 ---
 
 ## 📄 License
+
 MIT License.
