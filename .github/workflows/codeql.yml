@@ -10,9 +10,11 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
     permissions:
       security-events: write
       contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
