@@ -50,7 +50,7 @@ def show_summary(
 ) -> None:
     """Show architectural summary of the codebase knowledge graph."""
     engine = _get_engine(path)
-    summary = engine.graph.summary()
+    summary = engine.summary()
 
     if json_output:
         console.print(json.dumps(summary, indent=2))
@@ -58,6 +58,7 @@ def show_summary(
 
     console.print(f"\n[bold]🏛️ Codebase Knowledge Graph Summary[/bold]")
     console.print(f"Project: [cyan]{engine.project_root}[/cyan]")
+    console.print(f"Database: [dim]{engine.db_path}[/dim]")
     console.print(f"Last updated: [dim]{summary['updated_at']}[/dim]\n")
 
     table = Table(title="Overview Metrics")
@@ -128,7 +129,7 @@ def list_routes(
 ) -> None:
     """List all detected HTTP and RPC routes across the codebase."""
     engine = _get_engine(path)
-    routes = engine.graph.routes
+    routes = engine.storage.get_routes()
 
     if json_output:
         console.print(json.dumps([r.model_dump() for r in routes], indent=2))
@@ -153,7 +154,7 @@ def list_models(
 ) -> None:
     """List all detected data models, database tables, and schemas."""
     engine = _get_engine(path)
-    models = engine.graph.models
+    models = engine.storage.get_models()
 
     if json_output:
         console.print(json.dumps([m.model_dump() for m in models], indent=2))
@@ -209,7 +210,7 @@ def export_graph(
     """Export the codebase knowledge graph as a visual Mermaid diagram or JSON."""
     engine = _get_engine(path)
     if format.lower() == "mermaid":
-        mermaid_code = engine.graph.to_mermaid(focus_file=focus, max_nodes=max_nodes)
+        mermaid_code = engine.to_mermaid(focus_file=focus, max_nodes=max_nodes)
         console.print(mermaid_code)
     else:
         console.print(json.dumps(engine.graph.model_dump(), indent=2))

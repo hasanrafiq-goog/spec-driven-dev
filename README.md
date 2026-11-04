@@ -286,7 +286,8 @@ my-project/
 ├── .specify/
 │   ├── memory/
 │   │   ├── constitution.md     # Project principles & core guidelines
-│   │   └── code-graph.json     # Universal codebase knowledge graph cache
+│   │   ├── code-graph.db       # SQLite knowledge graph database (FTS5 & CTEs)
+│   │   └── code-graph.json     # Machine-readable knowledge graph export
 │   ├── templates/              # Standard templates for specs, plans, and tasks
 │   └── workflows/              # Pipeline definitions
 ├── specs/                      # Feature specifications & plans

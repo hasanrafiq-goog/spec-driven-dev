@@ -39,12 +39,12 @@ The Code Graph subsystem is structured into four layers:
    - `native_parser.py`: C, C++, C# classes, structs, functions, ASP.NET attributes.
    - `data_ml_parser.py`: Jupyter Notebook code cells, SQL schemas, Protobuf services and messages.
 
-3. **Engine (`engine.py`):**
-   - `CodeGraphEngine`: Orchestrates file parsing, incremental hash caching, and symbol extraction.
-   - Parallel worker pool (`ThreadPoolExecutor`) for high-throughput initial scans of large repos.
-   - Dependency edge resolution: Maps import declarations across files and builds bidirectional dependency graphs.
-   - Blast Radius Calculation: Computes direct dependents, transitive downstream graph (depth-bounded), impacted routes, test suites, and risk scores.
-   - Local Persistence: Saves the graph to `.specify/memory/code-graph.json`.
+3. **Engine & SQLite Storage (`engine.py`, `storage.py`):**
+   - `GraphStorage`: Manages `.specify/memory/code-graph.db` with WAL mode and zero external dependencies.
+   - Relational tables (`files`, `symbols`, `routes`, `models`, `edges`).
+   - Native SQL Recursive Common Table Expression (CTE) graph queries for instant blast radius traversal.
+   - SQLite FTS5 full-text virtual table (`symbols_fts`) with BM25 ranking for multi-token and stemmed search.
+   - `CodeGraphEngine`: Orchestrates file parsing, incremental hash caching, parallel worker pools, and backward-compatible JSON sync (`code-graph.json`).
 
 4. **CLI Adapter (`commands.py`):**
    - Exposed under `specify graph`:
