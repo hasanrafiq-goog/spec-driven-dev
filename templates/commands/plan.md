@@ -61,14 +61,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, FEATURE_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+2. **Load context & sync code graph**:
+   - Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
+   - Run `specify graph build` to ensure the Codebase Knowledge Graph (`.specify/memory/code-graph.db`) is incrementally synced. Because the engine caches file hashes with SHA-256, only new or modified files are parsed (sub-second execution).
+   - If modifying existing modules or routes, run `specify graph blast-radius <file_or_symbol> --json` to detect affected downstream callers and test suites before finalizing the plan.
+   - Run `specify graph query "<key terms from spec>"` to discover existing reusable data models, classes, and helper utilities.
 
 3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
-   - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
+   - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION", include blast radius context if modifying existing code)
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
-   - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
-   - Phase 1: Generate data-model.md, contracts/, quickstart.md
+   - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION, incorporate graph blast radius & dependencies)
+   - Phase 1: Generate data-model.md, contracts/, quickstart.md (reuse/extend existing models from graph)
    - Re-evaluate Constitution Check post-design
 
 ## Mandatory Post-Execution Hooks
@@ -113,8 +117,9 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
 
 ### Phase 0: Outline & Research
 
-1. **Extract unknowns from Technical Context** above:
+1. **Extract unknowns and architectural dependencies from Technical Context & Code Graph**:
    - For each NEEDS CLARIFICATION → research task
+   - For existing modules being modified → run `specify graph blast-radius <target>` and record affected routes & test suites
    - For each dependency → best practices task
    - For each integration → patterns task
 
@@ -140,6 +145,7 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
 
 1. **Extract entities from feature spec** → `data-model.md`:
    - Entity name, fields, relationships
+   - Check against existing schemas using `specify graph models --json` to reuse or extend existing data models without duplication
    - Validation rules from requirements
    - State transitions if applicable
 

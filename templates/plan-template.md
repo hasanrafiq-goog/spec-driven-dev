@@ -36,6 +36,8 @@
 
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
+**Codebase Graph / Blast Radius**: [if modifying existing code: impacted files, affected routes from `specify graph blast-radius`, or N/A for greenfield]
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
