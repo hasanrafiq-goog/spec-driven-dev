@@ -245,7 +245,8 @@ When initialized, projects store version-controlled artifacts in `.specify/`:
 my-project/
 ├── .specify/
 │   ├── memory/
-│   │   └── constitution.md     # Project principles & core guidelines
+│   │   ├── constitution.md     # Project principles & core guidelines
+│   │   └── code-graph.json     # Universal codebase knowledge graph cache
 │   ├── templates/              # Standard templates for specs, plans, and tasks
 │   └── workflows/              # Pipeline definitions
 ├── specs/                      # Feature specifications & plans
@@ -281,6 +282,31 @@ Inspect registered artifacts:
 ```bash
 specify artifact list
 ```
+
+### 🌐 Codebase Knowledge Graph & Blast Radius
+
+Specify includes a built-in structural knowledge graph that indexes repositories across Web, Backend, Systems, and Data/ML languages (Python, TypeScript/JavaScript, Go, Rust, Java/Kotlin, C/C++, C#, SQL, Protobuf, Jupyter Notebooks) with zero external compilation dependencies and sub-50ms incremental caching:
+
+```bash
+# Build or incrementally update the codebase graph
+specify graph build
+
+# View architectural overview, detected languages, and symbol counts
+specify graph summary
+
+# Calculate blast radius, affected routes, and relevant test suites
+specify graph blast-radius src/models/user.py
+
+# Discover all HTTP and RPC routes across the codebase
+specify graph routes
+
+# Inspect all database tables, Pydantic/Zod schemas, and data models
+specify graph models
+
+# Search code symbols across the repository
+specify graph query UserService
+```
+
 
 ---
 
