@@ -40,7 +40,8 @@ def build_graph(
     console.print(f"  • Symbols extracted: [cyan]{summary['total_symbols']}[/cyan]")
     console.print(f"  • Routes detected: [cyan]{summary['total_routes']}[/cyan]")
     console.print(f"  • Models/Schemas: [cyan]{summary['total_models']}[/cyan]")
-    console.print(f"  • Stored at: [dim]{engine.graph_path}[/dim]")
+    console.print(f"  • Graph Database: [cyan]{engine.db_path}[/cyan]")
+    console.print(f"  • JSON Export: [dim]{engine.graph_path}[/dim]")
 
 
 @app.command("summary")
