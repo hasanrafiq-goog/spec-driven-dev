@@ -87,6 +87,49 @@ class CodeGraph(BaseModel):
             "updated_at": self.updated_at,
         }
 
+    def to_mermaid(self, focus_file: str | None = None, max_nodes: int = 40) -> str:
+        """Export dependency graph as an interactive Mermaid diagram."""
+        lines = ["flowchart TD"]
+
+        def _clean_id(path: str) -> str:
+            return "n_" + path.replace("/", "_").replace(".", "_").replace("-", "_")
+
+        relevant_files: set[str] = set()
+        if focus_file and focus_file in self.files:
+            relevant_files.add(focus_file)
+            relevant_files.update(self.file_dependencies.get(focus_file, []))
+            relevant_files.update(self.reverse_file_dependencies.get(focus_file, []))
+        else:
+            sorted_files = sorted(
+                self.files.keys(),
+                key=lambda f: len(self.file_dependencies.get(f, [])) + len(self.reverse_file_dependencies.get(f, [])),
+                reverse=True,
+            )
+            relevant_files = set(sorted_files[:max_nodes])
+
+        for f in relevant_files:
+            fn = self.files.get(f)
+            if not fn:
+                continue
+            name = f.split("/")[-1]
+            extra = ""
+            if fn.routes:
+                extra = f" ({len(fn.routes)} routes)"
+            elif fn.models:
+                extra = f" ({len(fn.models)} models)"
+            lines.append(f'    {_clean_id(f)}["{name}{extra}"]')
+
+        added_edges: set[tuple[str, str]] = set()
+        for src in relevant_files:
+            for dst in self.file_dependencies.get(src, []):
+                if dst in relevant_files:
+                    edge = (src, dst)
+                    if edge not in added_edges:
+                        added_edges.add(edge)
+                        lines.append(f"    {_clean_id(src)} --> {_clean_id(dst)}")
+
+        return "\n".join(lines)
+
 
 class BlastRadiusReport(BaseModel):
     target: str

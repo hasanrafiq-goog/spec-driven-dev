@@ -82,3 +82,10 @@ def test_cli_graph_lifecycle(tmp_path: Path):
     res_query = runner.invoke(app, ["graph", "query", "Customer", "-p", str(tmp_path)])
     assert res_query.exit_code == 0
     assert "Customer" in res_query.output
+
+    # 7. specify graph export --format mermaid -p <tmp_path>
+    res_export = runner.invoke(app, ["graph", "export", "-p", str(tmp_path)])
+    assert res_export.exit_code == 0
+    assert "flowchart TD" in res_export.output
+    assert "models.py" in res_export.output
+

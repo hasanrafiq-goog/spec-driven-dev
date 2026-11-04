@@ -197,3 +197,20 @@ def query_symbols(
         table.add_row(s.name, s.symbol_type.value, s.signature or "-", f"{s.file_path}:{s.line_start}")
 
     console.print(table)
+
+
+@app.command("export")
+def export_graph(
+    format: str = typer.Option("mermaid", "--format", "-f", help="Export format: mermaid or json"),
+    focus: Optional[str] = typer.Option(None, "--focus", help="Focus file or module for neighborhood diagram"),
+    max_nodes: int = typer.Option(30, "--max-nodes", help="Max nodes in visual graph"),
+    path: Optional[Path] = typer.Option(None, "--path", "-p", help="Project root directory"),
+) -> None:
+    """Export the codebase knowledge graph as a visual Mermaid diagram or JSON."""
+    engine = _get_engine(path)
+    if format.lower() == "mermaid":
+        mermaid_code = engine.graph.to_mermaid(focus_file=focus, max_nodes=max_nodes)
+        console.print(mermaid_code)
+    else:
+        console.print(json.dumps(engine.graph.model_dump(), indent=2))
+

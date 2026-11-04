@@ -78,6 +78,7 @@ Run each phase in your agent chat, reviewing outputs along the way:
 | **`/speckit-analyze`** | 3.5 | Cross-checks consistency between the spec, plan, and tasks to detect gaps before writing code. |
 | **`/speckit-implement`** | 4 | Executes tasks incrementally, running automated tests at each step. |
 | **`/speckit-converge`** | 5 | Self-healing verification loop comparing actual code against spec until "Converged". |
+| **`/speckit-code-analyze`** | Audit | Standalone architectural health audit, blast radius hotspots, and visual code knowledge graph. |
 
 ---
 
@@ -143,19 +144,28 @@ When adding a feature or fixing a bug in an existing repository:
    specify init . --integration jetski
    ```
 
-2. **Capture existing repository norms in the constitution**:
+2. **Analyze existing architecture (zero-spec audit)**:
+   Run an initial architectural scan to discover existing endpoints, data schemas, and high-coupling hotspots:
+
+   ```text
+   /speckit-code-analyze
+   ```
+
+   The agent automatically indexes the repo and renders a visual Code Knowledge Graph and architectural inventory in an interactive UI artifact.
+
+3. **Capture existing repository norms in the constitution**:
 
    ```text
    /speckit-constitution Align with our existing patterns in src/: FastAPI, SQLAlchemy 2.0, pytest, and 90%+ branch coverage.
    ```
 
-3. **Specify the enhancement or fix**:
+4. **Specify the enhancement or fix**:
 
    ```text
    /speckit-specify Fix issue where expired JWT refresh tokens cause a 500 error instead of a 401 Unauthorized response in /auth/refresh.
    ```
 
-4. **Plan with codebase context**:
+5. **Plan with codebase context**:
 
    ```text
    /speckit-plan
@@ -163,7 +173,7 @@ When adding a feature or fixing a bug in an existing repository:
 
    The agent inspects existing models, database migrations, and routers to design a surgical change that avoids regressions.
 
-5. **Execute and verify**:
+6. **Execute and verify**:
 
    ```text
    /speckit-tasks
@@ -211,13 +221,20 @@ When you discover mid-way (or after converging) that a requirement was missed or
 
 When restructuring complex legacy code without altering business behavior:
 
-1. **Create a characterization spec**:
+1. **Inspect blast radius & coupling hotspots**:
+   Before modifying existing modules, examine downstream consumers and routes:
+
+   ```text
+   /speckit-code-analyze src/services/billing.py
+   ```
+
+2. **Create a characterization spec**:
 
    ```text
    /speckit-specify Refactor legacy billing calculation service in src/services/billing.py into a modular strategy pattern without changing any existing calculation outputs or API responses.
    ```
 
-2. **Design target architecture and test matrix**:
+3. **Design target architecture and test matrix**:
 
    ```text
    /speckit-plan
@@ -225,7 +242,7 @@ When restructuring complex legacy code without altering business behavior:
 
    Generates a refactoring plan that maps current behavior to the new architecture.
 
-3. **Decompose, build safety harnesses, and execute**:
+4. **Decompose, build safety harnesses, and execute**:
 
    ```text
    /speckit-tasks
@@ -234,6 +251,29 @@ When restructuring complex legacy code without altering business behavior:
    ```
 
    The agent creates comprehensive characterization tests first, refactors module-by-module, and verifies parity against existing test suites.
+
+---
+
+### Journey 5: Codebase Exploration & Architectural Audit (Zero-Spec)
+
+When onboarding onto an unfamiliar codebase, auditing technical debt, or mapping system architecture without building a new feature:
+
+1. **Run whole-codebase analysis**:
+
+   ```text
+   /speckit-code-analyze
+   ```
+
+   The agent executes a multi-language AST scan, indexes routes/schemas, and creates an interactive UI artifact with a visual Mermaid knowledge graph, API route inventory, and coupling hotspots.
+
+2. **Targeted subsystem deep-dive**:
+
+   ```text
+   /speckit-code-analyze auth
+   /speckit-code-analyze "how does payment processing work?"
+   ```
+
+   The agent traverses the knowledge graph and inspects targeted code slices to map entrypoints, services, database models, and test suites.
 
 ---
 
@@ -305,7 +345,11 @@ specify graph models
 
 # Search code symbols across the repository
 specify graph query UserService
+
+# Export visual Mermaid flowchart of the architecture
+specify graph export --format mermaid
 ```
+
 
 
 ---
