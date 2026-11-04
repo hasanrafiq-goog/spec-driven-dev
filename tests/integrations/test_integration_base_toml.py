@@ -463,6 +463,7 @@ class TomlIntegrationTests:
     COMMAND_STEMS = [
         "analyze",
         "clarify",
+        "code-analyze",
         "constitution",
         "converge",
         "implement",

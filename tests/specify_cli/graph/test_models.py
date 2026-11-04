@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from specify_cli.graph.models import (
     BlastRadiusReport,
     CodeGraph,

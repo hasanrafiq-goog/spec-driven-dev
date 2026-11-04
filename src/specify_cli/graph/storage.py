@@ -1,4 +1,4 @@
-"""SQLite Knowledge Graph storage backend with Recursive CTE graph queries and FTS5 search."""
+"""SQLite Knowledge Graph storage backend with Recursive CTE graph queries, rich semantic synthesis, and FTS5 search."""
 
 from __future__ import annotations
 
@@ -10,6 +10,38 @@ from typing import Any
 from .models import ModelNode, RouteNode, SymbolNode, SymbolType
 
 GRAPH_DB_REL_PATH = Path(".specify") / "memory" / "code-graph.db"
+
+
+def synthesize_symbol_summary(sym: SymbolNode, file_path: str) -> str:
+    """Generate rich semantic description for an AST symbol from its structural facts."""
+    parts = [f"{sym.symbol_type.value} '{sym.name}' declared in {file_path} (lines {sym.line_start}-{sym.line_end})."]
+    if sym.signature:
+        parts.append(f"Signature: {sym.signature}.")
+    if sym.docstring:
+        parts.append(f"Description: {sym.docstring.strip()}.")
+    if sym.references:
+        parts.append(f"References: {', '.join(sym.references)}.")
+    if sym.decorators_or_annotations:
+        parts.append(f"Decorators: {', '.join(sym.decorators_or_annotations)}.")
+    return " ".join(parts)
+
+
+def synthesize_route_summary(route: RouteNode, file_path: str) -> str:
+    """Generate rich semantic description for an HTTP/RPC route endpoint."""
+    handler = route.handler_symbol or "handler"
+    return (
+        f"API endpoint [{route.method}] '{route.path}' handled by {handler} "
+        f"in {file_path} at line {route.line}."
+    )
+
+
+def synthesize_model_summary(model: ModelNode, file_path: str) -> str:
+    """Generate rich semantic description for a data model or schema."""
+    fields_str = ", ".join(model.fields) if model.fields else "no declared fields"
+    return (
+        f"Data model/schema '{model.name}' (kind: {model.kind}) in {file_path} at line {model.line} "
+        f"with fields: {fields_str}."
+    )
 
 
 class GraphStorage:
@@ -59,7 +91,8 @@ class GraphStorage:
                     line_start INTEGER NOT NULL,
                     line_end INTEGER NOT NULL,
                     signature TEXT,
-                    docstring TEXT
+                    docstring TEXT,
+                    summary TEXT
                 );
                 CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_id);
                 CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
@@ -85,17 +118,37 @@ class GraphStorage:
                 );
                 CREATE INDEX IF NOT EXISTS idx_models_file ON models(file_id);
                 CREATE INDEX IF NOT EXISTS idx_models_name ON models(name);
-
-                CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
-                    symbol_id UNINDEXED,
-                    name,
-                    signature,
-                    docstring,
-                    file_path,
-                    tokenize = 'porter unicode61'
-                );
                 """
             )
+
+            # Ensure summary column in symbols
+            cols = [r["name"] for r in conn.execute("PRAGMA table_info(symbols)").fetchall()]
+            if "summary" not in cols:
+                conn.execute("ALTER TABLE symbols ADD COLUMN summary TEXT;")
+
+            # Upgrade FTS5 virtual table if it lacks the summary column
+            fts_cols = []
+            try:
+                fts_cols = [r["name"] for r in conn.execute("PRAGMA table_info(symbols_fts)").fetchall()]
+            except Exception:
+                pass
+
+            if "summary" not in fts_cols:
+                conn.execute("DROP TABLE IF EXISTS symbols_fts;")
+                conn.execute(
+                    """
+                    CREATE VIRTUAL TABLE symbols_fts USING fts5(
+                        symbol_id UNINDEXED,
+                        kind,
+                        name,
+                        signature,
+                        docstring,
+                        summary,
+                        file_path,
+                        tokenize = 'porter unicode61'
+                    );
+                    """
+                )
 
     def get_cached_hashes(self) -> dict[str, str]:
         """Return dict of {file_path: sha256} for all indexed files."""
@@ -114,7 +167,7 @@ class GraphStorage:
         routes: list[RouteNode],
         models: list[ModelNode],
     ) -> None:
-        """Insert or replace file metadata, symbols, routes, models, and FTS."""
+        """Insert or replace file metadata, symbols, routes, models, and rich synthesized FTS."""
         with self._get_connection() as conn:
             # Delete old entries
             conn.execute("DELETE FROM symbols_fts WHERE file_path = ?", (file_path,))
@@ -131,12 +184,13 @@ class GraphStorage:
                 (file_path, language, sha256, size_bytes, line_count),
             )
 
-            # Insert symbols & FTS
+            # Insert symbols & rich synthesized FTS
             for sym in symbols:
+                summary = sym.summary or synthesize_symbol_summary(sym, file_path)
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO symbols (id, file_id, name, symbol_type, line_start, line_end, signature, docstring)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO symbols (id, file_id, name, symbol_type, line_start, line_end, signature, docstring, summary)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         sym.id,
@@ -147,18 +201,20 @@ class GraphStorage:
                         sym.line_end,
                         sym.signature or "",
                         sym.docstring or "",
+                        summary,
                     ),
                 )
                 conn.execute(
                     """
-                    INSERT INTO symbols_fts (symbol_id, name, signature, docstring, file_path)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO symbols_fts (symbol_id, kind, name, signature, docstring, summary, file_path)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (sym.id, sym.name, sym.signature or "", sym.docstring or "", file_path),
+                    (sym.id, sym.symbol_type.value, sym.name, sym.signature or "", sym.docstring or "", summary, file_path),
                 )
 
-            # Insert routes
+            # Insert routes & FTS
             for r in routes:
+                route_summary = synthesize_route_summary(r, file_path)
                 conn.execute(
                     """
                     INSERT INTO routes (file_id, method, path, handler_symbol, line)
@@ -166,15 +222,46 @@ class GraphStorage:
                     """,
                     (file_path, r.method, r.path, r.handler_symbol or "", r.line),
                 )
+                conn.execute(
+                    """
+                    INSERT INTO symbols_fts (symbol_id, kind, name, signature, docstring, summary, file_path)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"{file_path}::{r.method} {r.path}",
+                        "endpoint",
+                        f"{r.method} {r.path}",
+                        f"Route {r.method} {r.path} -> {r.handler_symbol or 'handler'}",
+                        "",
+                        route_summary,
+                        file_path,
+                    ),
+                )
 
-            # Insert models
+            # Insert models & FTS
             for m in models:
+                model_summary = synthesize_model_summary(m, file_path)
                 conn.execute(
                     """
                     INSERT INTO models (file_id, name, kind, fields_json, line)
                     VALUES (?, ?, ?, ?, ?)
                     """,
                     (file_path, m.name, m.kind, json.dumps(m.fields), m.line),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO symbols_fts (symbol_id, kind, name, signature, docstring, summary, file_path)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        f"{file_path}::{m.name}",
+                        "model",
+                        m.name,
+                        f"{m.kind} {m.name}",
+                        "",
+                        model_summary,
+                        file_path,
+                    ),
                 )
 
     def delete_files(self, file_paths: list[str]) -> None:
@@ -243,7 +330,7 @@ class GraphStorage:
         return direct, transitive
 
     def search_symbols_fts(self, query: str, limit: int = 50) -> list[SymbolNode]:
-        """Search symbols using SQLite FTS5 with BM25 ranking and fallback to LIKE."""
+        """Search symbols, routes, and models using SQLite FTS5 with BM25 ranking across rich synthesized summaries."""
         clean_tokens = [t.replace('"', "").replace("'", "") for t in query.split() if t.strip()]
         if not clean_tokens:
             return []
@@ -253,12 +340,14 @@ class GraphStorage:
 
         with self._get_connection() as conn:
             try:
-                # Try FTS5 query with BM25 ranking
+                # Try FTS5 query with BM25 ranking across name, signature, docstring, and summary
                 cur = conn.execute(
                     """
-                    SELECT s.id, s.file_id, s.name, s.symbol_type, s.line_start, s.line_end, s.signature, s.docstring
+                    SELECT f.symbol_id, f.kind, f.name, f.signature, f.docstring, f.summary, f.file_path,
+                           COALESCE(s.line_start, 1) as line_start,
+                           COALESCE(s.line_end, 1) as line_end
                     FROM symbols_fts f
-                    JOIN symbols s ON f.symbol_id = s.id
+                    LEFT JOIN symbols s ON f.symbol_id = s.id
                     WHERE symbols_fts MATCH ?
                     ORDER BY rank
                     LIMIT ?
@@ -266,44 +355,72 @@ class GraphStorage:
                     (match_expr, limit),
                 )
                 for r in cur.fetchall():
+                    kind_str = r["kind"]
+                    try:
+                        sym_type = SymbolType(kind_str)
+                    except ValueError:
+                        sym_type = SymbolType.VARIABLE
+
                     results.append(
                         SymbolNode(
-                            id=r["id"],
-                            file_path=r["file_id"],
+                            id=r["symbol_id"],
+                            file_path=r["file_path"],
                             name=r["name"],
-                            symbol_type=SymbolType(r["symbol_type"]),
+                            symbol_type=sym_type,
                             line_start=r["line_start"],
                             line_end=r["line_end"],
                             signature=r["signature"] or None,
                             docstring=r["docstring"] or None,
+                            summary=r["summary"] or None,
                         )
                     )
             except Exception:
                 pass
 
-            # If FTS returns nothing, fallback to LIKE
+            # If FTS returns nothing, fallback to LIKE across symbols, routes, and models
             if not results:
                 like_expr = f"%{query.strip()}%"
                 cur = conn.execute(
                     """
-                    SELECT id, file_id, name, symbol_type, line_start, line_end, signature, docstring
+                    SELECT id as symbol_id, 'symbol' as kind, file_id as file_path, name, symbol_type,
+                           line_start, line_end, signature, docstring, summary
                     FROM symbols
-                    WHERE name LIKE ? OR id LIKE ?
+                    WHERE name LIKE ? OR id LIKE ? OR summary LIKE ? OR docstring LIKE ?
+                    UNION
+                    SELECT (file_id || '::' || name) as symbol_id, 'model' as kind, file_id as file_path, name, 'model' as symbol_type,
+                           line as line_start, line as line_end, (kind || ' ' || name) as signature, '' as docstring,
+                           ('Data model ' || name || ' with fields ' || fields_json) as summary
+                    FROM models
+                    WHERE name LIKE ? OR fields_json LIKE ?
+                    UNION
+                    SELECT (file_id || '::' || method || ' ' || path) as symbol_id, 'endpoint' as kind, file_id as file_path,
+                           (method || ' ' || path) as name, 'endpoint' as symbol_type, line as line_start, line as line_end,
+                           ('Route ' || method || ' ' || path || ' -> ' || handler_symbol) as signature, '' as docstring,
+                           ('API endpoint ' || method || ' ' || path) as summary
+                    FROM routes
+                    WHERE path LIKE ? OR method LIKE ? OR handler_symbol LIKE ?
                     LIMIT ?
                     """,
-                    (like_expr, like_expr, limit),
+                    (like_expr, like_expr, like_expr, like_expr, like_expr, like_expr, like_expr, like_expr, like_expr, limit),
                 )
                 for r in cur.fetchall():
+                    kind_str = r["symbol_type"]
+                    try:
+                        sym_type = SymbolType(kind_str)
+                    except ValueError:
+                        sym_type = SymbolType.VARIABLE
+
                     results.append(
                         SymbolNode(
-                            id=r["id"],
-                            file_path=r["file_id"],
+                            id=r["symbol_id"],
+                            file_path=r["file_path"],
                             name=r["name"],
-                            symbol_type=SymbolType(r["symbol_type"]),
+                            symbol_type=sym_type,
                             line_start=r["line_start"],
                             line_end=r["line_end"],
                             signature=r["signature"] or None,
                             docstring=r["docstring"] or None,
+                            summary=r["summary"] or None,
                         )
                     )
 

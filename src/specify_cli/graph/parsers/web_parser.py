@@ -33,8 +33,6 @@ class WebParser(BaseLanguageParser):
         routes: list[RouteNode] = []
         models: list[ModelNode] = []
 
-        lines = content.splitlines()
-
         # Imports
         for match in self.IMPORT_RE.finditer(content):
             target = match.group(1) or match.group(2)

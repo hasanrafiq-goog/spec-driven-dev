@@ -100,6 +100,81 @@ def test_storage_save_and_fts_search(tmp_path: Path):
     assert models[0].name == "TokenPayload"
     assert "user_id" in models[0].fields
 
+    # Search by model field name (e.g. 'exp' or 'user_id') via synthesized summary in FTS
+    field_results = storage.search_symbols_fts("user_id")
+    assert len(field_results) >= 1
+    assert any("TokenPayload" in r.name for r in field_results)
+
+    # Search by endpoint path or handler via synthesized summary in FTS
+    route_results = storage.search_symbols_fts("generate_token")
+    assert len(route_results) >= 1
+
+
+def test_storage_rich_semantic_synthesis(tmp_path: Path):
+    """Verify rich semantic descriptions are synthesized and indexed for docstring-free code."""
+    storage = GraphStorage(tmp_path / "test.db")
+
+    # Undocumented function with structural facts
+    sym = SymbolNode(
+        id="src/payment.py::process_refund",
+        file_path="src/payment.py",
+        name="process_refund",
+        symbol_type=SymbolType.FUNCTION,
+        line_start=20,
+        line_end=45,
+        signature="def process_refund(transaction_id: str, amount_cents: int) -> bool:",
+        docstring=None,  # No docstring!
+        references=["stripe_client", "ledger_repo"],
+        decorators_or_annotations=["@retry", "@require_admin"],
+    )
+
+    # Undocumented data model with fields
+    model = ModelNode(
+        file_path="src/payment.py",
+        name="RefundReceipt",
+        kind="dataclass",
+        fields=["refund_id", "original_tx", "amount", "currency", "settled_at"],
+        line=50,
+    )
+
+    # Undocumented route
+    route = RouteNode(
+        file_path="src/payment.py",
+        method="POST",
+        path="/v1/billing/refunds",
+        handler_symbol="process_refund",
+        line=20,
+    )
+
+    storage.save_file_nodes(
+        file_path="src/payment.py",
+        language="python",
+        sha256="hash_refund",
+        size_bytes=500,
+        line_count=60,
+        symbols=[sym],
+        routes=[route],
+        models=[model],
+    )
+
+    # 1. Search by reference or decorator found only in the synthesized summary
+    res_retry = storage.search_symbols_fts("retry")
+    assert len(res_retry) == 1
+    assert res_retry[0].name == "process_refund"
+    assert res_retry[0].summary is not None
+    assert "stripe_client" in res_retry[0].summary
+
+    # 2. Search by model field name (currency, settled_at) matches model
+    res_field = storage.search_symbols_fts("settled_at")
+    assert len(res_field) == 1
+    assert res_field[0].name == "RefundReceipt"
+    assert "amount" in (res_field[0].summary or "")
+
+    # 3. Search by endpoint path fragment
+    res_route = storage.search_symbols_fts("billing")
+    assert len(res_route) >= 1
+    assert any("/v1/billing/refunds" in r.name for r in res_route)
+
 
 def test_storage_recursive_cte_blast_radius(tmp_path: Path):
     storage = GraphStorage(tmp_path / "test.db")

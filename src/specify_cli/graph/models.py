@@ -30,6 +30,7 @@ class SymbolNode(BaseModel):
     line_end: int
     docstring: str | None = None
     signature: str | None = None
+    summary: str | None = None
     references: list[str] = Field(default_factory=list)
     decorators_or_annotations: list[str] = Field(default_factory=list)
     specified_in: str | None = None

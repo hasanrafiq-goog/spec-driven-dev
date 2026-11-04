@@ -35,7 +35,7 @@ def build_graph(
     graph = engine.build(force=refresh, max_workers=workers)
     summary = graph.summary()
 
-    console.print(f"[bold green]✓ Code graph updated successfully![/bold green]")
+    console.print("[bold green]✓ Code graph updated successfully![/bold green]")
     console.print(f"  • Files indexed: [cyan]{summary['total_files']}[/cyan]")
     console.print(f"  • Symbols extracted: [cyan]{summary['total_symbols']}[/cyan]")
     console.print(f"  • Routes detected: [cyan]{summary['total_routes']}[/cyan]")
@@ -57,7 +57,7 @@ def show_summary(
         console.print(json.dumps(summary, indent=2))
         return
 
-    console.print(f"\n[bold]🏛️ Codebase Knowledge Graph Summary[/bold]")
+    console.print("\n[bold]🏛️ Codebase Knowledge Graph Summary[/bold]")
     console.print(f"Project: [cyan]{engine.project_root}[/cyan]")
     console.print(f"Database: [dim]{engine.db_path}[/dim]")
     console.print(f"Last updated: [dim]{summary['updated_at']}[/dim]\n")
@@ -192,11 +192,12 @@ def query_symbols(
     table = Table(title=f"Symbol Search Results for '{query}' ({len(symbols)})")
     table.add_column("Name", style="bold cyan")
     table.add_column("Type", style="yellow")
-    table.add_column("Signature", style="dim")
+    table.add_column("Signature / Details", style="dim")
     table.add_column("File", style="dim")
 
     for s in sorted(symbols, key=lambda x: x.name):
-        table.add_row(s.name, s.symbol_type.value, s.signature or "-", f"{s.file_path}:{s.line_start}")
+        details = s.signature or (s.summary[:70] + "..." if s.summary and len(s.summary) > 70 else s.summary) or "-"
+        table.add_row(s.name, s.symbol_type.value, details, f"{s.file_path}:{s.line_start}")
 
     console.print(table)
 

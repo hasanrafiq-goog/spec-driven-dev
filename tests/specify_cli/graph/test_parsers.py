@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from specify_cli.graph.models import SymbolType
 from specify_cli.graph.parsers import get_parser_for_path
 from specify_cli.graph.parsers.data_ml_parser import DataMLParser
 from specify_cli.graph.parsers.go_parser import GoParser
