@@ -33,7 +33,8 @@ Instead of raw prompts that lead to hallucination, context drift, and brittle ha
 ### 2. 🛡️ 100% Recall & Ground-Truth Invariant
 
 - **Dual-Track Discovery**: The Knowledge Graph acts as a Tier 1 structural accelerator for instant symbol lookups and topology analysis, while physical code files, markdown specifications (`spec.md`), and test suites remain the 100% authoritative ground truth.
-- **No Negative Assumptions**: Agents are strictly forbidden from concluding a requirement, scenario, or model is missing based solely on an empty graph query result. If a natural-language scenario or narrative concept does not map to an exact AST identifier, agents seamlessly fall back to holistic grep and direct file inspection.
+- **Non-Exhaustive Indexing Principle**: Graph query results are additive starting points (seeds and anchors), **never closed or exhaustive sets**. Even when a graph query returns partial results, agents MUST NOT assume the output represents the complete universe of relevant code. Agents use graph results to locate initial anchor points, then continuously corroborate and expand context through direct file reading, reference tracing, and repository-wide search to guarantee 100% recall.
+- **No Negative Assumptions**: Agents are strictly forbidden from concluding a requirement, scenario, or model is missing or unbuilt based solely on graph query results or omissions. If a natural-language scenario or narrative concept does not map to an exact AST identifier, agents seamlessly fall back to holistic grep and direct file inspection.
 
 ### 3. 🎯 Full Lifecycle Spec-Driven Workflow
 
