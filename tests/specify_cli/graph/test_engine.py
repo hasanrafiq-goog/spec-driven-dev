@@ -124,3 +124,49 @@ def test_engine_blast_radius_and_search(tmp_path: Path):
     graph_par = engine.build(force=True, max_workers=2)
     assert len(graph_par.files) == 5
 
+
+def test_engine_subdirectory_relative_imports_and_blast_radius(tmp_path: Path):
+    src = tmp_path / "src"
+    src.mkdir()
+    types_dir = src / "types"
+    types_dir.mkdir()
+    components_dir = src / "components"
+    components_dir.mkdir()
+
+    # src/types/simulator.ts
+    (types_dir / "simulator.ts").write_text(
+        "export interface SimulatorParameters { budget: number; }\n",
+        encoding="utf-8",
+    )
+
+    # src/components/CommercialSummary.tsx importing '../types/simulator' (single-line)
+    (components_dir / "CommercialSummary.tsx").write_text(
+        "import { SimulatorParameters } from '../types/simulator';\nexport function CommercialSummary() {}\n",
+        encoding="utf-8",
+    )
+
+    # src/components/SimulatorPanel.tsx importing '../types/simulator' (multiline)
+    (components_dir / "SimulatorPanel.tsx").write_text(
+        "import {\n  CalendarTier,\n  PromoType,\n  SimulationParameters,\n} from '../types/simulator';\nexport function SimulatorPanel() {}\n",
+        encoding="utf-8",
+    )
+
+    engine = CodeGraphEngine(tmp_path)
+    graph = engine.build()
+
+    # Normalized keys
+    assert "src/types/simulator.ts" in graph.files
+    assert "src/components/CommercialSummary.tsx" in graph.files
+    assert "src/components/SimulatorPanel.tsx" in graph.files
+
+    # Verify dependency resolution handles ../ correctly for both single-line and multiline imports
+    assert "src/types/simulator.ts" in graph.file_dependencies["src/components/CommercialSummary.tsx"]
+    assert "src/types/simulator.ts" in graph.file_dependencies["src/components/SimulatorPanel.tsx"]
+    assert "src/components/CommercialSummary.tsx" in graph.reverse_file_dependencies["src/types/simulator.ts"]
+    assert "src/components/SimulatorPanel.tsx" in graph.reverse_file_dependencies["src/types/simulator.ts"]
+
+    # Blast radius on src/types/simulator.ts must include both components as directly impacted
+    report = engine.query_blast_radius("src/types/simulator.ts")
+    assert "src/components/CommercialSummary.tsx" in report.directly_impacted_files
+    assert "src/components/SimulatorPanel.tsx" in report.directly_impacted_files
+

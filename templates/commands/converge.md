@@ -97,6 +97,7 @@ Run `{SCRIPT}` once from repo root and parse JSON for FEATURE_DIR and AVAILABLE_
 - PLAN = FEATURE_DIR/plan.md
 - TASKS = FEATURE_DIR/tasks.md
 - CONSTITUTION = `/memory/constitution.md` (if present)
+- Run `specify graph build` to ensure the Codebase Knowledge Graph (`.specify/memory/code-graph.db`) is incrementally synced with the latest implemented code.
 If `spec.md`, `plan.md`, or `tasks.md` is missing, STOP with a clear, actionable message naming the
 prerequisite command to run (`__SPECKIT_COMMAND_SPECIFY__` for a missing spec, `__SPECKIT_COMMAND_PLAN__` for a missing plan,
 `__SPECKIT_COMMAND_TASKS__` for missing tasks). Do not produce partial output.
@@ -138,9 +139,10 @@ Create an internal model (do not echo raw artifacts):
   scenario (e.g. `US1/AC2`), plus the plan decisions and constitution principles that
   impose buildable obligations.
 - **Code-scope map**: from the file paths named in `plan.md` and `tasks.md`, plus a keyword
-  search for the concepts each requirement describes, derive the set of source files and
+  search for the concepts each requirement describes (and optional `specify graph query "<concept>"` accelerator), derive the set of source files and
   components in scope for assessment. Bound the assessment to these — do **not** infer
   scope beyond what the artifacts define.
+- **100% Recall & Authoritative Ground Truth**: The project artifacts (`spec.md`, `plan.md`, `tasks.md`, physical source code files, and tests) are the SOLE authoritative ground truth. The knowledge graph is an indexing accelerator, NOT an exclusionary gate. You MUST NOT make negative assertions (e.g. claiming a requirement, scenario, or model is unbuilt or missing) based solely on graph query results. Always perform direct artifact inspection and text searches. If a requirement or scenario is expressed in natural language or does not map to a strict AST symbol name, verify directly against the code files before logging any gap.
 
 ### 4. Assess the Codebase and Classify Findings
 

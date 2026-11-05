@@ -42,6 +42,7 @@ Execute the following commands to extract the ground-truth architectural graph:
 Do NOT read entire directories into context. For the 3–5 critical anchor files identified by the graph:
 - Use the exact file paths and line numbers reported by the graph to read targeted slices.
 - Inspect how entrypoint routes connect to business services and database schemas.
+- **Dual-Track Exploration**: The knowledge graph provides structural acceleration (routes, models, coupling, blast radius). Do not rely solely on graph results: inspect anchor files directly, read configuration files, and if `specs/` exists, cross-check whether architectural components correspond to documented specifications.
 
 ### 4. Generate the Code Analysis Artifacts
 

@@ -203,14 +203,18 @@ class CodeGraphEngine:
                 # Direct relative resolution (e.g. ./utils, ../service)
                 resolved: str | None = None
                 if imp.startswith("."):
-                    cand = (Path(rel).parent / imp).as_posix()
-                    for ext in (".ts", ".js", ".py", ".go", ".rs", ".tsx", ".jsx"):
-                        if f"{cand}{ext}" in self.graph.files:
-                            resolved = f"{cand}{ext}"
-                            break
-                        if f"{cand}/index{ext}" in self.graph.files:
-                            resolved = f"{cand}/index{ext}"
-                            break
+                    rel_dir = Path(rel).parent
+                    normalized = os.path.normpath((rel_dir / imp).as_posix()).replace("\\", "/")
+                    if normalized in self.graph.files:
+                        resolved = normalized
+                    else:
+                        for ext in (".ts", ".tsx", ".d.ts", ".js", ".jsx", ".py", ".go", ".rs", ".mjs", ".cjs"):
+                            if f"{normalized}{ext}" in self.graph.files:
+                                resolved = f"{normalized}{ext}"
+                                break
+                            if f"{normalized}/index{ext}" in self.graph.files:
+                                resolved = f"{normalized}/index{ext}"
+                                break
 
                 # Module/package resolution
                 if not resolved:

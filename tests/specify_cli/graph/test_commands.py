@@ -83,9 +83,45 @@ def test_cli_graph_lifecycle(tmp_path: Path):
     assert res_query.exit_code == 0
     assert "Customer" in res_query.output
 
+    # 6b. specify graph query Customer --json
+    res_query_json = runner.invoke(app, ["graph", "query", "Customer", "-p", str(tmp_path), "--json"])
+    assert res_query_json.exit_code == 0
+    q_data = json.loads(res_query_json.output)
+    assert isinstance(q_data, list)
+    assert any(item["name"] == "Customer" for item in q_data)
+
     # 7. specify graph export --format mermaid -p <tmp_path>
     res_export = runner.invoke(app, ["graph", "export", "-p", str(tmp_path)])
     assert res_export.exit_code == 0
     assert "flowchart TD" in res_export.output
     assert "models.py" in res_export.output
+
+
+def test_cli_graph_json_output_wrapping_prevention(tmp_path: Path):
+    """Verify that very long symbol IDs and paths are never broken by terminal line wrapping in --json mode."""
+    deep_dir = tmp_path / "specs" / "001-commercial-pacing-simulator" / "contracts"
+    deep_dir.mkdir(parents=True)
+    deep_file = deep_dir / "simulator-contracts.ts"
+    deep_file.write_text(
+        "export interface SimulationParameters {\n    budget: number;\n    startDate: string;\n}\n",
+        encoding="utf-8",
+    )
+
+    runner.invoke(app, ["graph", "build", "-p", str(tmp_path)])
+
+    # Query with --json
+    res = runner.invoke(app, ["graph", "query", "SimulationParameters", "-p", str(tmp_path), "--json"])
+    assert res.exit_code == 0
+    # Must parse cleanly with standard json.loads without any Invalid control character / line break errors
+    parsed = json.loads(res.output)
+    assert len(parsed) >= 1
+    matched = next(s for s in parsed if s["name"] == "SimulationParameters")
+    assert "simulator-contracts.ts" in matched["id"]
+    assert "\n" not in matched["id"]
+
+    # Models with --json
+    res_models = runner.invoke(app, ["graph", "models", "-p", str(tmp_path), "--json"])
+    assert res_models.exit_code == 0
+    models_parsed = json.loads(res_models.output)
+    assert any(m["name"] == "SimulationParameters" for m in models_parsed)
 

@@ -112,9 +112,10 @@ export async function GET(request: Request) {
     assert any("zod" in imp for imp in imports)
     assert any("express" in imp for imp in imports)
 
-    # Models: Zod schema
+    # Models: Zod schema & TypeScript interface
     model_names = [m.name for m in models]
     assert "UserSchema" in model_names
+    assert "AuthContext" in model_names
 
     # Symbols: Interface & functions
     symbol_names = [s.name for s in symbols]
@@ -125,6 +126,76 @@ export async function GET(request: Request) {
     route_paths = [r.path for r in routes]
     assert "/api/health" in route_paths
     assert any("api/v1" in r.path for r in routes)
+
+
+def test_web_parser_typescript_interfaces_types_and_zod():
+    code = '''
+export interface SimulatorParameters {
+    startDate: string;
+    endDate: string;
+    budget: number;
+    targets?: string[];
+}
+
+export type SimulationResult = {
+    totalPacing: number;
+    variance: number;
+    status: "ok" | "warning";
+};
+
+export const ConfigSchema = z.object({
+    apiKey: z.string(),
+    maxRetries: z.number().int(),
+    timeoutMs: z.number().optional(),
+});
+'''
+    parser = WebParser()
+    p = Path("src/types/simulator.ts")
+    _, symbols, _, models = parser.parse(p, str(p), code)
+
+    # Check symbols
+    symbol_names = [s.name for s in symbols]
+    assert "SimulatorParameters" in symbol_names
+    assert "SimulationResult" in symbol_names
+
+    # Check models
+    model_map = {m.name: m for m in models}
+    assert "SimulatorParameters" in model_map
+    assert model_map["SimulatorParameters"].kind == "ts_interface"
+    assert model_map["SimulatorParameters"].fields == ["startDate", "endDate", "budget", "targets"]
+
+    assert "SimulationResult" in model_map
+    assert model_map["SimulationResult"].kind == "ts_type"
+    assert model_map["SimulationResult"].fields == ["totalPacing", "variance", "status"]
+
+    assert "ConfigSchema" in model_map
+    assert model_map["ConfigSchema"].kind == "zod_schema"
+    assert model_map["ConfigSchema"].fields == ["apiKey", "maxRetries", "timeoutMs"]
+
+
+def test_web_parser_multiline_imports():
+    code = '''
+import {
+  CalendarTier,
+  PromoType,
+  SimulationParameters,
+} from '../types/simulator';
+
+import { MLForecastOutput } from '../types/simulator';
+import './reset.css';
+export * from './reexports';
+const lazy = await import('./lazy-module');
+const cjs = require('./cjs-module');
+'''
+    parser = WebParser()
+    p = Path("src/components/SimulatorPanel.tsx")
+    imports, _, _, _ = parser.parse(p, str(p), code)
+
+    assert "../types/simulator" in imports
+    assert "./reset.css" in imports
+    assert "./reexports" in imports
+    assert "./lazy-module" in imports
+    assert "./cjs-module" in imports
 
 
 def test_go_parser():

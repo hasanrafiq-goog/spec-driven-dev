@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
+import sys
+from typing import Any, Optional
 import typer
 from rich.table import Table
 
@@ -16,6 +17,12 @@ app = typer.Typer(
     help="Universal Codebase Knowledge Graph for blast radius analysis and architecture inspection.",
     no_args_is_help=True,
 )
+
+
+def _print_json(data: Any) -> None:
+    """Print raw, unformatted JSON directly to stdout bypassing terminal column wrapping."""
+    sys.stdout.write(json.dumps(data, indent=2) + "\n")
+    sys.stdout.flush()
 
 
 def _get_engine(project_path: Optional[Path] = None) -> CodeGraphEngine:
@@ -54,7 +61,7 @@ def show_summary(
     summary = engine.summary()
 
     if json_output:
-        console.print(json.dumps(summary, indent=2))
+        _print_json(summary)
         return
 
     console.print("\n[bold]🏛️ Codebase Knowledge Graph Summary[/bold]")
@@ -92,7 +99,7 @@ def blast_radius(
     report = engine.query_blast_radius(target, max_depth=max_depth)
 
     if json_output:
-        console.print(json.dumps(report.model_dump(), indent=2))
+        _print_json(report.model_dump())
         return
 
     risk_style = "red" if report.risk_level == "HIGH" else ("yellow" if report.risk_level == "MEDIUM" else "green")
@@ -133,7 +140,7 @@ def list_routes(
     routes = engine.storage.get_routes()
 
     if json_output:
-        console.print(json.dumps([r.model_dump() for r in routes], indent=2))
+        _print_json([r.model_dump() for r in routes])
         return
 
     table = Table(title=f"Detected API Routes ({len(routes)})")
@@ -158,7 +165,7 @@ def list_models(
     models = engine.storage.get_models()
 
     if json_output:
-        console.print(json.dumps([m.model_dump() for m in models], indent=2))
+        _print_json([m.model_dump() for m in models])
         return
 
     table = Table(title=f"Detected Models & Schemas ({len(models)})")
@@ -186,7 +193,7 @@ def query_symbols(
     symbols = engine.search_symbols(query, limit=limit)
 
     if json_output:
-        console.print(json.dumps([s.model_dump() for s in symbols], indent=2))
+        _print_json([s.model_dump() for s in symbols])
         return
 
     table = Table(title=f"Symbol Search Results for '{query}' ({len(symbols)})")
@@ -215,5 +222,5 @@ def export_graph(
         mermaid_code = engine.to_mermaid(focus_file=focus, max_nodes=max_nodes)
         console.print(mermaid_code)
     else:
-        console.print(json.dumps(engine.graph.model_dump(), indent=2))
+        _print_json(engine.graph.model_dump())
 
