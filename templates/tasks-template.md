@@ -18,6 +18,7 @@ description: "Task list template for feature implementation"
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - **(blocked_by: [IDs])**: Explicit task IDs that must complete before this task can begin (DAG dependencies for isolated worktree dispatch)
+- **Tracer-Bullet Slices**: Touch $\le$ 3 files per task to keep increments atomic and PR-sized
 - Include exact file paths in descriptions
 
 ## Path Conventions

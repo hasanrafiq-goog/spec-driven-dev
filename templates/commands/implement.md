@@ -166,7 +166,10 @@ You **MUST** consider the user input before proceeding (if not empty).
 7. Execute implementation following the task plan:
    - **Phase-by-phase execution**: Complete each phase before moving to the next
    - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
-   - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
+   - **Strict Red-Green-Refactor Rhythm (TDD)**:
+     - **Red (Verify Failure)**: When executing test tasks, write the test and **run the test runner to observe it fail**. Verify the failure is specifically due to the missing functionality. If a test passes before code is written, investigate for false-positive test logic.
+     - **Green (Minimal Pass)**: Write the minimal implementation code necessary to satisfy the test. Re-run the test suite to confirm it passes.
+     - **Refactor**: Clean up the implementation, maintain type annotations and docstrings, and confirm the test suite stays green.
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
 
