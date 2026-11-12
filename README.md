@@ -22,7 +22,7 @@ Instead of raw prompts that lead to hallucination, context drift, and brittle ha
 
 ### 1. 🛡️ Deterministic Multi-Stage Gating Pipeline
 
-Spec Kit eliminates AI hallucinations and context drift through an airtight, multi-stage gating process where every phase produces verified, reviewable markdown artifacts:
+Spec-Driven-DevKit eliminates AI hallucinations and context drift through an airtight, multi-stage gating process where every phase produces verified, reviewable markdown artifacts:
 
 - **Phase 0 — Project Constitution (`/speckit-constitution`)**: Establish non-negotiable architectural boundaries, coding standards, typing requirements, and testing bars.
 - **Phase 1 — Feature Specification (`/speckit-specify`)**: Generate crystal-clear PRDs, user stories, acceptance scenarios (Gherkin style), and measurable success criteria with Socratic boundary checking (zero premature guesswork).
@@ -58,10 +58,10 @@ Every phase creates version-controlled, human-readable markdown artifacts under 
 
 ### 4. 🧠 Unified Architecture Memory & Knowledge Graph
 
-Spec Kit maintains a continuously synchronized, category-based architectural memory in `.specify/memory/architecture/` that unifies technical code, functional PRDs, specifications, and issue tracking:
+Spec-Driven-DevKit maintains a continuously synchronized, category-based architectural memory in `.specify/memory/architecture/` that unifies technical code, functional PRDs, specifications, and issue tracking:
 
 - **Multi-Language AST Analysis**: Automatically discovers API routes, handlers, database entities, domain models, and import graphs across Python, TypeScript/JavaScript, Go, Rust, Java, SQL, and Prisma.
-- **Unified Functional & Work Traceability Matrix**: Connects functional PRDs (`docs/`), active Spec Kit feature specifications (`specs/**`), and JIRA tickets directly to their implementing code components, endpoints, and data models.
+- **Unified Functional & Work Traceability Matrix**: Connects functional PRDs (`docs/`), active Spec-Driven-DevKit feature specifications (`specs/**`), and JIRA tickets directly to their implementing code components, endpoints, and data models.
 - **Modular Knowledge Categories**:
   - `overview.md`: System summary, detected tech stacks, directory conventions, and visual Mermaid system topology.
   - `api-surface.md`: Exhaustive catalog of exposed HTTP/RPC endpoints, CLI commands, and entrypoint handlers.
@@ -75,7 +75,7 @@ Spec Kit maintains a continuously synchronized, category-based architectural mem
 ### 5. 🔌 Extensibility, Lifecycle Hooks & Community Catalog
 
 - **Lifecycle Hook System**: Define custom pre- and post-execution hooks in `.specify/extensions.yml` (`before_plan`, `after_plan`, `before_implement`, `after_implement`, `before_converge`, etc.) to trigger custom linters, security scanners, or automated CI notifications.
-- **Extensions & Bundles**: Discover, install, and author reusable Spec Kit extensions, presets, and workflows with `specify extension`, `specify preset`, and `specify bundle`.
+- **Extensions & Bundles**: Discover, install, and author reusable Spec-Driven-DevKit extensions, presets, and workflows with `specify extension`, `specify preset`, and `specify bundle`.
 - **Automation Workflows**: Script and execute multi-step agent workflows deterministically using `specify workflow`.
 
 ### 6. 🔬 Socratic Rigor, Mutation Safety & Session Continuity
@@ -155,7 +155,7 @@ Run each phase in your agent chat, reviewing outputs along the way:
 
 ### 📊 Central SDLC Board & Work Tracker (`.specify/BOARD.md`)
 
-Spec Kit automatically maintains a centralized, git-tracked Kanban board at `.specify/BOARD.md` across all SDLC stages—no manual tracking or extra commands required:
+Spec-Driven-DevKit automatically maintains a centralized, git-tracked Kanban board at `.specify/BOARD.md` across all SDLC stages—no manual tracking or extra commands required:
 
 - **Full Lifecycle Visibility**: Managers and developers can open `.specify/BOARD.md` at any time to inspect macro feature stages and micro task progress across the entire repository.
 - **First-Class Human-in-the-Loop (`Assignee: @human`)**: When an agent hits an architectural fork, security boundary, or roadblock (in `/speckit-clarify` or `/speckit-implement`), it routes a ticket directly to `## 🛑 Blocked & Awaiting Human Input (@human)` with tagged file lines and context. Downstream commands like `/speckit-plan` automatically gate and wait until human sign-off is resolved.
@@ -230,7 +230,7 @@ When starting a brand-new project—either from an idea or pre-existing product 
 
 When adding a feature or fixing a bug in an existing repository:
 
-1. **Bootstrap Spec Kit into the repo**:
+1. **Bootstrap Spec-Driven-DevKit into the repo**:
 
    ```bash
    specify init . --integration jetski
@@ -398,7 +398,7 @@ The `specify` CLI provides a complete set of command-line tools for managing pro
 # Check environment health, installed dependencies, and tool prerequisites
 specify check
 
-# Initialize Spec Kit in the current directory for a specific agent
+# Initialize Spec-Driven-DevKit in the current directory for a specific agent
 specify init . --integration jetski
 specify init . --integration claude
 
@@ -486,10 +486,10 @@ specify session checkpoint --clear
 
 Working in a shared enterprise repository where committing agent-specific scaffolding (`.specify/`) is restricted?
 
-Spec Kit supports **Shadow SDD**, letting you leverage full AST delta-caching, Socratic gating, and task DAGs locally while keeping your upstream git tree and PR diffs completely clean:
+Spec-Driven-DevKit supports **Shadow SDD**, letting you leverage full AST delta-caching, Socratic gating, and task DAGs locally while keeping your upstream git tree and PR diffs completely clean:
 
 ```bash
-# Keep all Spec Kit scaffolding local to your checkout
+# Keep all Spec-Driven-DevKit scaffolding local to your checkout
 cat << 'EOF' >> .git/info/exclude
 .specify/
 specs/
