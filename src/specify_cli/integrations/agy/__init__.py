@@ -128,7 +128,11 @@ class AgyIntegration(SkillsIntegration):
                         skill_folder = skill_path.parent
                         target_link = target_dir / skill_folder.name
                         try:
-                            if target_link.is_symlink() or target_link.exists():
+                            if target_link.is_symlink():
+                                target_link.unlink()
+                            elif target_link.is_dir():
+                                shutil.rmtree(target_link)
+                            elif target_link.exists():
                                 target_link.unlink()
                             target_link.symlink_to(skill_folder.resolve())
                         except OSError:
