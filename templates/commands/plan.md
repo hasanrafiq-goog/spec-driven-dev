@@ -61,7 +61,24 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse JSON for FEATURE_SPEC, IMPL_PLAN, FEATURE_DIR, BRANCH. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Load context**:
+2. **Spec Gating Check (CRITICAL)**:
+   - Read FEATURE_SPEC (`spec.md`).
+   - Scan `spec.md` for any remaining `[NEEDS CLARIFICATION: ...]` markers or pending questions.
+   - **If unresolved clarifications exist**:
+     - **HALT IMMEDIATELY**: Do NOT proceed to planning or generate `plan.md`.
+     - Output an explicit gate error listing the unresolved questions:
+       ```text
+       ⛔ SPEC GATING ERROR: Unresolved Clarifications in spec.md
+       The specification contains unresolved architectural forks or questions:
+       - [List each unresolved question/marker]
+
+       You MUST resolve these ambiguities before generating an implementation plan.
+       Run `/speckit-clarify` to answer them interactively, or update `spec.md` directly.
+       ```
+     - Stop execution immediately. Do not generate `plan.md`, `research.md`, or contracts.
+   - **If all clarifications are resolved**: Proceed to Step 3.
+
+3. **Load context**:
    - Read FEATURE_SPEC and `/memory/constitution.md`.
    - Check `.specify/memory/architecture/`. If missing or stale, run `specify architecture generate` in the background.
    - Consult relevant category files in `.specify/memory/architecture/`:
@@ -71,11 +88,11 @@ You **MUST** consider the user input before proceeding (if not empty).
      - `traceability.md` for existing functional requirements and ticket mappings.
    - Load IMPL_PLAN template (already copied).
 
-3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
-   - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
+4. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
+   - Fill Technical Context
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
-   - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
+   - Phase 0: Generate research.md (resolve technical implementation and library choices; NOT product requirements)
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Re-evaluate Constitution Check post-design
 

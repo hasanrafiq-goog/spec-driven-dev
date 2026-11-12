@@ -272,7 +272,9 @@ Report completion to the user with:
 - `SPECIFY_FEATURE_DIRECTORY` — the feature directory path
 - `SPEC_FILE` — the spec file path
 - Checklist results summary
-- Readiness for the next phase (`__SPECKIT_COMMAND_CLARIFY__` or `__SPECKIT_COMMAND_PLAN__`)
+- Next step routing:
+  - If `spec.md` contains unresolved `[NEEDS CLARIFICATION]` markers or pending questions: State clearly that the next phase is `__SPECKIT_COMMAND_CLARIFY__`. Warn the user that `__SPECKIT_COMMAND_PLAN__` will reject the spec until all clarifications are resolved.
+  - If `spec.md` has 0 unresolved clarifications: Ready for `__SPECKIT_COMMAND_PLAN__`.
 
 **NOTE:** Branch creation is handled by the `before_specify` hook (git extension). Spec directory and file creation are always handled by this core command.
 
