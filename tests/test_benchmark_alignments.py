@@ -7,6 +7,7 @@ from pathlib import Path
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
 SPECIFY_CMD = TEMPLATES_DIR / "commands" / "specify.md"
 CLARIFY_CMD = TEMPLATES_DIR / "commands" / "clarify.md"
+PLAN_CMD = TEMPLATES_DIR / "commands" / "plan.md"
 IMPLEMENT_CMD = TEMPLATES_DIR / "commands" / "implement.md"
 TASKS_CMD = TEMPLATES_DIR / "commands" / "tasks.md"
 TASKS_TEMPLATE = TEMPLATES_DIR / "tasks-template.md"
@@ -68,3 +69,15 @@ def test_tasks_dag_dependency_format() -> None:
     # tasks-template.md
     assert "blocked_by: [IDs]" in template_text
     assert "(blocked_by: [T012, T013])" in template_text
+
+
+def test_plan_enforces_spec_gating_gate() -> None:
+    plan_text = PLAN_CMD.read_text(encoding="utf-8")
+
+    # Must check spec gating before planning
+    assert "Spec Gating Check" in plan_text
+    assert "HALT IMMEDIATELY" in plan_text
+    assert "Do NOT proceed to planning or generate `plan.md`" in plan_text
+    assert "⛔ SPEC GATING ERROR: Unresolved Clarifications in spec.md" in plan_text
+    assert "Run `/speckit-clarify` to answer them interactively" in plan_text
+
