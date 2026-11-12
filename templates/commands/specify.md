@@ -271,7 +271,7 @@ Report completion to the user with:
 - Checklist results summary
 - Next step routing:
   - The next phase is **ALWAYS** `__SPECKIT_COMMAND_CLARIFY__`. Clarification is mandatory for all specifications to probe architectural failure seams, disambiguate edge cases, extract domain vocabulary into `GLOSSARY.md`, and record ADRs.
-  - **NEVER** recommend or suggest `__SPECKIT_COMMAND_PLAN__` directly after specify. In the Spec Kit lifecycle, `__SPECKIT_COMMAND_SPECIFY__` must always be followed by `__SPECKIT_COMMAND_CLARIFY__`. Direct execution of plan without clarification will fail architectural gating.
+  - **NEVER** recommend or suggest `__SPECKIT_COMMAND_PLAN__` directly after specify. In the Spec-Driven-DevKit lifecycle, `__SPECKIT_COMMAND_SPECIFY__` must always be followed by `__SPECKIT_COMMAND_CLARIFY__`. Direct execution of plan without clarification will fail architectural gating.
 
 ### Central SDLC Board Synchronization
 

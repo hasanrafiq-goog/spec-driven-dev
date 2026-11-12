@@ -1,7 +1,7 @@
 # 📋 Project SDLC Board & Work Tracker
 
 > **Central status board, ticket tracker, and cross-agent checklist for Spec-Driven Development.**
-> Auto-maintained by Spec Kit commands: `__SPECKIT_COMMAND_SPECIFY__`, `__SPECKIT_COMMAND_CLARIFY__`, `__SPECKIT_COMMAND_PLAN__`, `__SPECKIT_COMMAND_TASKS__`, `__SPECKIT_COMMAND_IMPLEMENT__`, `__SPECKIT_COMMAND_CONVERGE__`.
+> Auto-maintained by Spec-Driven-DevKit commands: `__SPECKIT_COMMAND_SPECIFY__`, `__SPECKIT_COMMAND_CLARIFY__`, `__SPECKIT_COMMAND_PLAN__`, `__SPECKIT_COMMAND_TASKS__`, `__SPECKIT_COMMAND_IMPLEMENT__`, `__SPECKIT_COMMAND_CONVERGE__`.
 >
 > **How to use this board**:
 > - **Engineers & Managers**: Review this file at any time to see active features, bottlenecks, and tasks assigned to `@human`.
