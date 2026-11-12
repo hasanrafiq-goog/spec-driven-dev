@@ -182,7 +182,12 @@ Every task MUST strictly follow this format:
 
 ### Task Organization
 
-1. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
+1. **Vertical Tracer-Bullet Slicing (CRITICAL)**:
+   - **Vertical over Horizontal**: Do NOT group tasks by horizontal architectural layers (e.g., all database models in phase 1, all services in phase 2). Slice vertically per user story so each phase delivers an end-to-end, testable increment.
+   - **Atomic Blast Radius**: Each individual task must touch $\le$ 3 files. If a task requires modifying more than 3 files, break it into smaller vertical subtasks.
+   - **DAG Blocked-By Dependencies**: For tasks that depend on outputs from earlier tasks, append `(blocked_by: [T###])`. Tasks without dependencies should be tagged `[P]` for parallel dispatch.
+
+2. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
    - Each user story (P1, P2, P3...) gets its own phase
    - Map all related components to their story:
      - Models needed for that story
@@ -191,17 +196,17 @@ Every task MUST strictly follow this format:
      - If tests requested: Tests specific to that story
    - Mark story dependencies (most stories should be independent)
 
-2. **From Contracts**:
+3. **From Contracts**:
    - Map each interface contract → to the user story it serves
    - If tests requested: Each interface contract → contract test task [P] before implementation in that story's phase
 
-3. **From Data Model**:
+4. **From Data Model**:
    - Map each entity to the user story(ies) that need it
    - If entity serves multiple stories: Put in earliest story or Setup phase
    - Relationships → service layer tasks in appropriate story phase
    - For each field with constraints in data-model.md (max length, nullable/required, enum values, validation rules), quote the constraint verbatim in the task description so it is not left to implementation-time discretion
 
-4. **From Setup/Infrastructure**:
+5. **From Setup/Infrastructure**:
    - Shared infrastructure → Setup phase (Phase 1)
    - Foundational/blocking tasks → Foundational phase (Phase 2)
    - Story-specific setup → within that story's phase

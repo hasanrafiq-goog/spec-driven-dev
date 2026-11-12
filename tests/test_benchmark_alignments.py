@@ -10,6 +10,7 @@ CLARIFY_CMD = TEMPLATES_DIR / "commands" / "clarify.md"
 PLAN_CMD = TEMPLATES_DIR / "commands" / "plan.md"
 IMPLEMENT_CMD = TEMPLATES_DIR / "commands" / "implement.md"
 TASKS_CMD = TEMPLATES_DIR / "commands" / "tasks.md"
+CONVERGE_CMD = TEMPLATES_DIR / "commands" / "converge.md"
 TASKS_TEMPLATE = TEMPLATES_DIR / "tasks-template.md"
 
 
@@ -80,4 +81,39 @@ def test_plan_enforces_spec_gating_gate() -> None:
     assert "Do NOT proceed to planning or generate `plan.md`" in plan_text
     assert "⛔ SPEC GATING ERROR: Unresolved Clarifications in spec.md" in plan_text
     assert "Run `/speckit-clarify` to answer them interactively" in plan_text
+
+
+def test_clarify_socratic_grilling_and_adr_support() -> None:
+    clarify_text = CLARIFY_CMD.read_text(encoding="utf-8")
+
+    assert "adversarial staff engineer" in clarify_text
+    assert "GLOSSARY.md" in clarify_text
+    assert "docs/adr/ADR-" in clarify_text
+
+
+def test_tasks_vertical_tracer_bullet_slicing() -> None:
+    tasks_cmd_text = TASKS_CMD.read_text(encoding="utf-8")
+    template_text = TASKS_TEMPLATE.read_text(encoding="utf-8")
+
+    assert "Vertical Tracer-Bullet Slicing" in tasks_cmd_text
+    assert "Atomic Blast Radius" in tasks_cmd_text
+    assert "Tracer-Bullet Slices" in template_text
+
+
+def test_implement_strict_tdd_rhythm() -> None:
+    implement_text = IMPLEMENT_CMD.read_text(encoding="utf-8")
+
+    assert "Strict Red-Green-Refactor Rhythm (TDD)" in implement_text
+    assert "Red (Verify Failure)" in implement_text
+    assert "Green (Minimal Pass)" in implement_text
+
+
+def test_converge_dual_lens_audit() -> None:
+    converge_text = CONVERGE_CMD.read_text(encoding="utf-8")
+
+    assert "Dual-Lens Audit" in converge_text
+    assert "Lens 1 (Spec & Requirement Traceability)" in converge_text
+    assert "Lens 2 (Code Quality & Anti-Patterns)" in converge_text
+    assert "Continuous Learning Retro" in converge_text
+
 

@@ -146,7 +146,11 @@ Create an internal model (do not echo raw artifacts):
   components in scope for assessment. Bound the assessment to these — do **not** infer
   scope beyond what the artifacts define.
 
-### 4. Assess the Codebase and Classify Findings
+### 4. Assess the Codebase via Dual-Lens Audit
+
+Assess the codebase through two rigorous lenses:
+- **Lens 1 (Spec & Requirement Traceability)**: Did we build everything specified in `spec.md`, `plan.md`, and `tasks.md` without omitting any FR-### or acceptance criteria? Does any code introduce unrequested functionality or scope creep?
+- **Lens 2 (Code Quality & Anti-Patterns)**: Does the implementation introduce architecture violations, dead code, unhandled error cases, missing assertions in tests, or constitution MUST/SHOULD regressions?
 
 Include every existing task in the intent inventory, regardless of checkbox state or
 Convergence phase: completion claims are not evidence. Verify current behavior against
@@ -242,6 +246,7 @@ Append to the **end** of `tasks.md`, per the append contract:
   run will find fewer or no remaining items.
 - On `converged`: recommend proceeding to review / opening a PR. No further implement pass
   is needed for this feature's specified scope.
+  - **Continuous Learning Retro (Optional)**: If any non-trivial test failures, debugging loops, or corrections occurred during implementation, suggest a concise 1-sentence principle to append to `/memory/constitution.md` to prevent recurring friction on future features.
 
 ### 9. Check for extension hooks
 

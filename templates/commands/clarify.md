@@ -70,7 +70,7 @@ Execution steps:
 
 2. **IF EXISTS**: Load `/memory/constitution.md` for project principles and governance constraints.
 
-3. Load the current spec file. Perform a structured ambiguity & coverage scan using this taxonomy. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
+3. Load the current spec file. Perform a structured Socratic ambiguity & coverage scan using this taxonomy. Act as an adversarial staff engineer probing architectural failure seams, edge cases, auth boundaries, race conditions, and ubiquitous domain concepts. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
    Functional Scope & Behavior:
    - Core user goals & success criteria
@@ -193,13 +193,15 @@ Execution steps:
        - Edge case / negative flow → Add a new bullet under Edge Cases / Error Handling (or create such subsection if template provides placeholder for it).
        - Terminology conflict → Normalize term across spec; retain original only if necessary by adding `(formerly referred to as "X")` once.
     - If the clarification invalidates an earlier ambiguous statement, replace that statement instead of duplicating; leave no obsolete contradictory text.
+    - **Ubiquitous Language & Glossary**: If a domain term or actor definition is clarified or standardized, record or append it to `.specify/memory/GLOSSARY.md` (create file if missing) mapping term to its definition.
+    - **Architectural Decision Record (ADR)**: If the clarification resolves a major architectural fork or permanent design tradeoff, write a concise ADR in `docs/adr/ADR-####-<topic>.md` (create directory if missing) documenting Status, Context, Decision, and Consequences, and cross-reference the ADR in `spec.md`.
     - Save the spec file AFTER each integration to minimize risk of context loss (atomic overwrite).
     - Preserve formatting: do not reorder unrelated sections; keep heading hierarchy intact.
     - Keep each inserted clarification minimal and testable (avoid narrative drift).
 
 7. Validation (performed after EACH write plus final pass):
    - Clarifications session contains exactly one bullet per accepted answer (no duplicates).
-   - Total asked (accepted) questions ≤ 5.
+   - Questions in this interactive round are validated and resolved.
    - Updated sections contain no lingering vague placeholders the new answer was meant to resolve.
    - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
    - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
@@ -230,7 +232,7 @@ Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
 - If spec file missing, instruct user to run `__SPECKIT_COMMAND_SPECIFY__` first (do not create a new spec here).
-- Never exceed 5 total asked questions (clarification retries for a single question do not count as new questions).
+- Batch questioning in interactive rounds (up to 5 per round), continuing until all critical architectural forks are settled (clarification retries for a single question do not count as new questions).
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").
 - If no questions asked due to full coverage, output a compact coverage summary (all categories Clear) then suggest advancing.
