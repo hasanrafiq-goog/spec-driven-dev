@@ -25,14 +25,14 @@ Instead of raw prompts that lead to hallucination, context drift, and brittle ha
 Spec Kit eliminates AI hallucinations and context drift through an airtight, multi-stage gating process where every phase produces verified, reviewable markdown artifacts:
 
 - **Phase 0 — Project Constitution (`/speckit-constitution`)**: Establish non-negotiable architectural boundaries, coding standards, typing requirements, and testing bars.
-- **Phase 1 — Feature Specification (`/speckit-specify`)**: Generate crystal-clear PRDs, user stories, acceptance scenarios (Gherkin style), and measurable success criteria.
-- **Phase 1.5 — Socratic Clarification (`/speckit-clarify`)**: Proactively interviews you on critical ambiguities, architectural forks, data contracts, and edge cases before technical design begins.
-- **Phase 2 — Architectural Planning (`/speckit-plan`)**: Designs technical architecture, database schemas, interfaces, contracts (`contracts/`), and technical prerequisites (`research.md`, `quickstart.md`).
+- **Phase 1 — Feature Specification (`/speckit-specify`)**: Generate crystal-clear PRDs, user stories, acceptance scenarios (Gherkin style), and measurable success criteria with Socratic boundary checking (zero premature guesswork).
+- **Phase 1.5 — Socratic Clarification (`/speckit-clarify`)**: Proactively grills the design on architectural failure seams, edge cases, auth boundaries, race conditions, ubiquitous domain vocabulary (`GLOSSARY.md`), and durable Architectural Decision Records (`docs/adr/ADR-####.md`).
+- **Phase 2 — Architectural Planning (`/speckit-plan`)**: Enforces hard **Spec Gating Checks** (strictly halts if ambiguities remain unresolved), designs technical architecture, data models, interface contracts (`contracts/`), and technical prerequisites.
 - **Phase 2.5 — Requirements Checklists (`/speckit-checklist`)**: Generates custom requirements-quality verification checklists—acting as "unit tests for your requirements" before breaking work into tasks.
-- **Phase 3 — Dependency Task Decomposition (`/speckit-tasks`)**: Breaks implementation plans into discrete, ordered tasks with explicit phase grouping and parallel markers (`[P]`).
+- **Phase 3 — Dependency Task Decomposition (`/speckit-tasks`)**: Slices features into vertical tracer-bullet tasks with explicit DAG dependency tags (`blocked_by: [T###]`) for multi-worktree parallel execution.
 - **Phase 3.5 — Cross-Artifact Consistency Analysis (`/speckit-analyze`)**: Non-destructively audits `spec.md` ↔ `plan.md` ↔ `tasks.md` for gaps, orphan tasks, or contradictions before writing code.
-- **Phase 4 — Test-Driven Implementation (`/speckit-implement`)**: Builds features incrementally task-by-task, running automated tests and marking tasks complete in real-time.
-- **Phase 5 — Self-Healing Convergence (`/speckit-converge`)**: Performs an authoritative spec-to-code gap assessment, comparing the codebase against the spec and appending any missing work as actionable tasks until 100% converged.
+- **Phase 4 — Test-Driven Implementation (`/speckit-implement`)**: Builds features incrementally with strict Red-Green-Refactor TDD loops, pre-mutation state safety guardrails (halts before destructive file/schema changes), and durable session checkpointing.
+- **Phase 5 — Self-Healing Convergence (`/speckit-converge`)**: Conducts a Dual-Lens audit (Spec Traceability + Code Smells), builds a Bidirectional Traceability Matrix, and auto-appends any missing work as actionable tasks until 100% converged.
 
 ### 2. 🤖 Universal Multi-Agent Native Support
 
@@ -77,6 +77,16 @@ Spec Kit maintains a continuously synchronized, category-based architectural mem
 - **Lifecycle Hook System**: Define custom pre- and post-execution hooks in `.specify/extensions.yml` (`before_plan`, `after_plan`, `before_implement`, `after_implement`, `before_converge`, etc.) to trigger custom linters, security scanners, or automated CI notifications.
 - **Extensions & Bundles**: Discover, install, and author reusable Spec Kit extensions, presets, and workflows with `specify extension`, `specify preset`, and `specify bundle`.
 - **Automation Workflows**: Script and execute multi-step agent workflows deterministically using `specify workflow`.
+
+### 6. 🔬 Socratic Rigor, Mutation Safety & Session Continuity
+
+- **Socratic Architectural Gating**: Eliminates premature guesswork by interrogating domain boundaries, data store contracts, and auth models before planning. Major decisions are automatically recorded as Architectural Decision Records (`docs/adr/ADR-####.md`) and ubiquitous domain terms in `.specify/memory/GLOSSARY.md`.
+- **Hard Spec Gating**: `/speckit-plan` strictly refuses to generate technical plans if unresolved ambiguities or clarification markers remain in `spec.md`.
+- **Vertical Tracer-Bullet DAGs**: Slices features into thin, end-to-end testable slices ($\le$ 3 files per task) tagged with explicit `(blocked_by: [T###])` dependencies for parallel multi-worktree execution.
+- **Pre-Mutation State Safety Gates**: Enforces strict confirmation checks before destructive operations (file deletions, schema migrations, public API contract breaks).
+- **Strict Red-Green-Refactor Rhythm**: Verifies that tests actually fail before implementation code is written, eliminating false-positive test suites.
+- **Durable Session Checkpointing**: Automatically tracks in-progress features, active phases, and completed task IDs in `.specify/session-checkpoint.json` across IDE/window restarts.
+- **Dual-Lens Convergence**: Evaluates code through both Functional Traceability (Requirements $\leftrightarrow$ Tests) and Code Quality (constitution compliance and anti-pattern detection).
 
 ---
 
@@ -131,16 +141,16 @@ Run each phase in your agent chat, reviewing outputs along the way:
 
 | Slash Command | Stage | Purpose |
 | :--- | :---: | :--- |
-| **`/speckit-code-analyze`** | Audit | Deep architectural analysis: extracts AST, maps functional PRDs/JIRA tickets to code, and builds `.specify/memory/architecture/`. |
-| **`/speckit-constitution`** | 0 | Sets non-negotiable project quality bars, tech stack boundaries, and rules. |
-| **`/speckit-specify`** | 1 | Generates the functional specification (PRD, user stories, acceptance criteria). |
-| **`/speckit-clarify`** | 1.5 | Active interview mode: agent asks targeted questions to resolve ambiguities before planning. |
-| **`/speckit-plan`** | 2 | Designs the architecture, technical dependencies, data models, and interface contracts. |
+| **`/speckit-code-analyze`** | Audit | Deep architectural analysis: extracts AST delta-cache (~100ms), maps functional PRDs/JIRA tickets to code, and populates `.specify/memory/architecture/`. |
+| **`/speckit-constitution`** | 0 | Sets non-negotiable project quality bars, tech stack boundaries, and living engineering rules. |
+| **`/speckit-specify`** | 1 | Generates functional specifications (PRDs, user stories, acceptance criteria) with Socratic boundary gating. |
+| **`/speckit-clarify`** | 1.5 | Socratic grilling: probes architectural failure seams, updates ubiquitous glossary (`GLOSSARY.md`), and records ADRs. |
+| **`/speckit-plan`** | 2 | Designs architecture, data models, and contracts with a strict Spec Gating Check that blocks planning if ambiguities remain. |
 | **`/speckit-checklist`** | 2.5 | Generates requirements-quality verification checklists. |
-| **`/speckit-tasks`** | 3 | Decomposes the plan into discrete, dependency-ordered, agent-executable tasks. |
+| **`/speckit-tasks`** | 3 | Slices features into vertical tracer-bullet tasks with explicit `(blocked_by: [IDs])` DAG dependencies. |
 | **`/speckit-analyze`** | 3.5 | Cross-checks consistency between the spec, plan, and tasks to detect gaps before writing code. |
-| **`/speckit-implement`** | 4 | Executes tasks incrementally, running automated tests at each step. |
-| **`/speckit-converge`** | 5 | Self-healing verification loop comparing actual code against spec until "Converged". |
+| **`/speckit-implement`** | 4 | Executes tasks incrementally with strict Red-Green-Refactor TDD, Pre-Mutation State Safety Gates, and session checkpoints. |
+| **`/speckit-converge`** | 5 | Self-healing Dual-Lens audit (Spec Traceability + Code Smells) that auto-appends missing tasks until "Converged". |
 
 ---
 
