@@ -104,6 +104,7 @@ Given that feature description, do this:
      ```
      Write the actual resolved directory path value (for example, `specs/003-user-auth`), not the literal string `SPECIFY_FEATURE_DIRECTORY`.
      This allows downstream commands (`__SPECKIT_COMMAND_PLAN__`, `__SPECKIT_COMMAND_TASKS__`, etc.) to locate the feature directory without relying on git branch name conventions.
+   - Record session continuity checkpoint in `.specify/session-checkpoint.json` with active feature directory and phase `specify`.
 
    **IMPORTANT**:
    - You must only create one feature per `__SPECKIT_COMMAND_SPECIFY__` invocation
@@ -120,13 +121,11 @@ Given that feature description, do this:
     2. Extract key concepts from description
        Identify: actors, actions, data, constraints
     3. For unclear aspects:
-       - Make informed guesses based on context and industry standards
-       - Only mark with [NEEDS CLARIFICATION: specific question] if:
-         - The choice significantly impacts feature scope or user experience
-         - Multiple reasonable interpretations exist with different implications
-         - No reasonable default exists
-       - **LIMIT: Maximum 3 [NEEDS CLARIFICATION] markers total**
-       - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
+       - Conduct rigorous Socratic architectural interrogation of all domain boundaries, architectural forks, data contracts, and security models.
+       - Do NOT make silent or premature guesses on architectural forks, database schemas, or public APIs.
+       - Mark every unresolved architectural fork, security boundary, or contract ambiguity with [NEEDS CLARIFICATION: specific question].
+       - Do NOT artificially cap clarification markers when critical architectural or contract forks remain unsettled.
+       - Prioritize Socratic interrogation by impact: architectural/domain boundaries > security/privacy > data contracts > user experience > technical details.
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
     5. Generate Functional Requirements
@@ -198,8 +197,8 @@ Given that feature description, do this:
 
       - **If [NEEDS CLARIFICATION] markers remain**:
         1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
-        2. **LIMIT CHECK**: If more than 3 markers exist, keep only the 3 most critical (by scope/security/UX impact) and make informed guesses for the rest
-        3. For each clarification needed (max 3), present options to user in this format:
+        2. Prioritize clarifications by architectural, security, and contract impact (architecture/contracts > security > scope > UX). Do NOT discard markers on critical architectural forks.
+        3. For each clarification needed, present options to user in this format:
 
            ```markdown
            ## Question [N]: [Topic]
@@ -225,7 +224,7 @@ Given that feature description, do this:
            - Each cell should have spaces around content: `| Content |` not `|Content|`
            - Header separator must have at least 3 dashes: `|--------|`
            - Test that the table renders correctly in markdown preview
-        5. Number questions sequentially (Q1, Q2, Q3 - max 3 total)
+        5. Number questions sequentially (Q1, Q2, Q3, etc.)
         6. Present all questions together before waiting for responses
         7. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
         8. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
@@ -294,25 +293,25 @@ Report completion to the user with:
 
 When creating this spec from a user prompt:
 
-1. **Make informed guesses**: Use context, industry standards, and common patterns to fill gaps
-2. **Document assumptions**: Record reasonable defaults in the Assumptions section
-3. **Limit clarifications**: Maximum 3 [NEEDS CLARIFICATION] markers - use only for critical decisions that:
-   - Significantly impact feature scope or user experience
-   - Have multiple reasonable interpretations with different implications
-   - Lack any reasonable default
-4. **Prioritize clarifications**: scope > security/privacy > user experience > technical details
+1. **Socratic Architectural Gating**: Explicitly identify and probe architectural forks, boundary decisions, and data contracts. Do NOT silently guess on architectural forks or security models.
+2. **Document assumptions**: Record reasonable operational defaults only in the Assumptions section, never for critical architectural decisions.
+3. **Rigorous clarification**: Use [NEEDS CLARIFICATION] markers for all high-impact decisions that:
+   - Significantly impact architecture, domain boundaries, or system topology
+   - Involve data schema changes, public API contracts, or breaking mutations
+   - Have multiple architectural forks with diverging tradeoffs
+4. **Prioritize clarifications**: architecture/data contracts > security/compliance > feature scope/boundaries > user experience
 5. **Think like a tester**: Every vague requirement should fail the "testable and unambiguous" checklist item
-6. **Common areas needing clarification** (only if no reasonable default exists):
-   - Feature scope and boundaries (include/exclude specific use cases)
-   - User types and permissions (if multiple conflicting interpretations possible)
-   - Security/compliance requirements (when legally/financially significant)
+6. **Common areas needing clarification**:
+   - Architectural topology and data store contracts
+   - Security and compliance requirements (auth boundaries, tenancy isolation)
+   - Feature scope and boundary semantics (include/exclude specific use cases)
+   - User types, roles, and authorization policies
 
-**Examples of reasonable defaults** (don't ask about these):
+**Examples of reasonable operational defaults** (don't ask about these unless an architectural fork exists):
 
 - Data retention: Industry-standard practices for the domain
 - Performance targets: Standard web/mobile app expectations unless specified
 - Error handling: User-friendly messages with appropriate fallbacks
-- Authentication method: Standard session-based or OAuth2 for web apps
 - Integration patterns: Use project-appropriate patterns (REST/GraphQL for web services, function calls for libraries, CLI args for tools, etc.)
 
 ### Success Criteria Guidelines

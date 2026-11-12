@@ -13,10 +13,11 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Story] Description (blocked_by: [IDs])`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **(blocked_by: [IDs])**: Explicit task IDs that must complete before this task can begin (DAG dependencies for isolated worktree dispatch)
 - Include exact file paths in descriptions
 
 ## Path Conventions
@@ -66,7 +67,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T004 Setup database schema and migrations framework
 - [ ] T005 [P] Implement authentication/authorization framework
 - [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
+- [ ] T007 Create base models/entities that all stories depend on (blocked_by: [T004])
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
 
@@ -91,7 +92,7 @@ Examples of foundational tasks (adjust based on your project):
 
 - [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
 - [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
+- [ ] T014 [US1] Implement [Service] in src/services/[service].py (blocked_by: [T012, T013])
 - [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
 - [ ] T016 [US1] Add validation and error handling
 - [ ] T017 [US1] Add logging for user story 1 operations
@@ -116,7 +117,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
 - [ ] T021 [US2] Implement [Service] in src/services/[service].py
 - [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T023 [US2] Integrate with User Story 1 components in src/[location]/[file].py (blocked_by: [T015, T022])
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 

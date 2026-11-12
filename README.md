@@ -26,7 +26,7 @@ Spec Kit eliminates AI hallucinations and context drift through an airtight, mul
 
 - **Phase 0 — Project Constitution (`/speckit-constitution`)**: Establish non-negotiable architectural boundaries, coding standards, typing requirements, and testing bars.
 - **Phase 1 — Feature Specification (`/speckit-specify`)**: Generate crystal-clear PRDs, user stories, acceptance scenarios (Gherkin style), and measurable success criteria.
-- **Phase 1.5 — Socratic Clarification (`/speckit-clarify`)**: Proactively interviews you on up to 5 critical ambiguities and edge cases before technical design begins.
+- **Phase 1.5 — Socratic Clarification (`/speckit-clarify`)**: Proactively interviews you on critical ambiguities, architectural forks, data contracts, and edge cases before technical design begins.
 - **Phase 2 — Architectural Planning (`/speckit-plan`)**: Designs technical architecture, database schemas, interfaces, contracts (`contracts/`), and technical prerequisites (`research.md`, `quickstart.md`).
 - **Phase 2.5 — Requirements Checklists (`/speckit-checklist`)**: Generates custom requirements-quality verification checklists—acting as "unit tests for your requirements" before breaking work into tasks.
 - **Phase 3 — Dependency Task Decomposition (`/speckit-tasks`)**: Breaks implementation plans into discrete, ordered tasks with explicit phase grouping and parallel markers (`[P]`).
@@ -421,6 +421,39 @@ specify self check
 # Upgrade specify-cli in place to the latest release
 specify self upgrade
 ```
+
+### 6. Session Continuity & Checkpoint Management
+
+Resume in-progress features across fresh IDE windows or agent restarts:
+
+```bash
+# Display active feature checkpoint, current phase, and completed tasks
+specify session status
+
+# Record or update an active session checkpoint
+specify session checkpoint --feature "user-auth" --phase implement --task-done T001
+
+# Clear the current session checkpoint
+specify session checkpoint --clear
+```
+
+---
+
+## 🛡️ Shadow SDD: Non-Polluting Spec-Driven Development
+
+Working in a shared enterprise repository where committing agent-specific scaffolding (`.specify/`) is restricted?
+
+Spec Kit supports **Shadow SDD**, letting you leverage full AST delta-caching, Socratic gating, and task DAGs locally while keeping your upstream git tree and PR diffs completely clean:
+
+```bash
+# Keep all Spec Kit scaffolding local to your checkout
+cat << 'EOF' >> .git/info/exclude
+.specify/
+specs/
+EOF
+```
+
+Read the full [Shadow SDD Guide](docs/shadow-sdd.md) for out-of-tree targeting via `SPECIFY_INIT_DIR` and PR-ready traceability exports.
 
 ---
 

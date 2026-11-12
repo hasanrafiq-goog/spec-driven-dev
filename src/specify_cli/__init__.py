@@ -430,6 +430,11 @@ _register_event_cmds(app)
 from .architecture._commands import register as _register_architecture_cmds  # noqa: E402
 _register_architecture_cmds(app)
 
+
+# ===== Session Commands =====
+from .session._commands import register as _register_session_cmds  # noqa: E402
+_register_session_cmds(app)
+
 # Re-export selected helpers to preserve the public import surface.
 from .integrations._helpers import (  # noqa: E402
     _clear_init_options_for_integration as _clear_init_options_for_integration,
