@@ -131,6 +131,7 @@ Run each phase in your agent chat, reviewing outputs along the way:
 ```text
 /speckit-constitution Create principles focused on clean architecture, strict typing, and 100% test coverage.
 /speckit-specify Build an asynchronous API health monitoring tool with a live terminal TUI and desktop alerts.
+/speckit-clarify
 /speckit-plan Use Python 3.12, asyncio, httpx, and Rich for live terminal rendering.
 /speckit-tasks
 /speckit-implement
@@ -180,13 +181,13 @@ When starting a brand-new project—either from an idea or pre-existing product 
    /speckit-specify Build the MVP described in docs/prd.md with user registration, team workspaces, and role-based permissions.
    ```
 
-4. **Stress-test and clarify ambiguities**:
+4. **Socratic grilling and disambiguation**:
 
    ```text
    /speckit-clarify
    ```
 
-   The agent interviews you on up to 5 critical edge cases before designing architecture.
+   The agent conducts a deep Socratic interview on critical failure seams, edge cases, auth boundaries, race conditions, domain vocabulary (`GLOSSARY.md`), and records settled architectural forks in `docs/adr/`.
 
 5. **Generate architecture & validate requirements**:
 
@@ -248,7 +249,15 @@ When adding a feature or fixing a bug in an existing repository:
    /speckit-specify Fix issue where expired JWT refresh tokens cause a 500 error instead of a 401 Unauthorized response in /auth/refresh.
    ```
 
-5. **Plan with codebase context**:
+5. **Clarify boundary impact & backward compatibility**:
+
+   ```text
+   /speckit-clarify
+   ```
+
+   The agent probes regression risks, token validation edge cases, and client error contracts against the existing codebase before architectural planning.
+
+6. **Plan with codebase context**:
 
    ```text
    /speckit-plan
@@ -256,7 +265,7 @@ When adding a feature or fixing a bug in an existing repository:
 
    The agent inspects existing models, database migrations, and routers to design a surgical change that avoids regressions.
 
-6. **Execute and verify**:
+7. **Execute and verify**:
 
    ```text
    /speckit-tasks
@@ -281,7 +290,15 @@ When you discover mid-way (or after converging) that a requirement was missed or
 
    The agent updates `specs/<feature>/spec.md` with the new requirements without erasing prior context.
 
-2. **Update the plan & append new tasks**:
+2. **Clarify delta impact & resolve contradictions**:
+
+   ```text
+   /speckit-clarify
+   ```
+
+   The agent checks for conflicts between new and existing requirements (e.g., expiration policies for active links, audit logging failure modes) and settles tradeoffs before altering the plan.
+
+3. **Update the plan & append new tasks**:
 
    ```text
    /speckit-plan
@@ -290,7 +307,7 @@ When you discover mid-way (or after converging) that a requirement was missed or
 
    The agent preserves completed tasks (`- [x]`) and appends only the new tasks needed for the requirement change.
 
-3. **Implement remaining work**:
+4. **Implement remaining work**:
 
    ```text
    /speckit-implement
@@ -311,7 +328,15 @@ When restructuring complex legacy code without altering business behavior:
    /speckit-specify Refactor legacy billing calculation service in src/services/billing.py into a modular strategy pattern without changing any existing calculation outputs or API responses.
    ```
 
-2. **Design target architecture and test matrix**:
+2. **Socratic grilling on invariants & compatibility**:
+
+   ```text
+   /speckit-clarify
+   ```
+
+   The agent interrogates critical refactoring seams: public API backward compatibility, performance benchmarks, concurrency safety, and zero-downtime cutover strategies.
+
+3. **Design target architecture and test matrix**:
 
    ```text
    /speckit-plan
@@ -319,7 +344,7 @@ When restructuring complex legacy code without altering business behavior:
 
    Generates a refactoring plan that maps current behavior to the new architecture.
 
-3. **Decompose, build safety harnesses, and execute**:
+4. **Decompose, build safety harnesses, and execute**:
 
    ```text
    /speckit-tasks
