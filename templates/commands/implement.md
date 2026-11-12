@@ -90,6 +90,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 3. Load and analyze the implementation context:
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
+   - **IF EXISTS**: Read `.specify/BOARD.md` to identify the next unblocked task and verify no pending `@human` blockers exist for this feature
    - **IF EXISTS**: Read data-model.md for entities and relationships
    - **IF EXISTS**: Read contracts/ for API specifications and test requirements
    - **IF EXISTS**: Read research.md for technical decisions and constraints
@@ -235,6 +236,19 @@ Check if `.specify/extensions.yml` exists in the project root.
     To execute: `/{command}`
     ```
 
+### Central SDLC Board Synchronization
+
+You **MUST** keep `.specify/BOARD.md` synchronized as tasks are executed:
+- **When picking up a task**:
+  - Move the task from `## 🟡 Ready for Work` to `## 🚀 In Progress` with `Assignee: @agent-implement` and `Status: IN_PROGRESS`.
+- **When encountering a blocker requiring human input (@human)**:
+  - If an implementation roadblock, environment error, missing credential, or unexpected architectural conflict occurs that cannot be resolved autonomously:
+    - Move the task to `## 🛑 Blocked & Awaiting Human Input (@human)`.
+    - Mark `Status: BLOCKED`, `Assignee: @human`.
+    - Detail the exact blocking error, target file paths, and the decision or credential required from the user.
+- **When a task completes and passes tests**:
+  - Move the completed task item to `## ✅ Done & Converged`.
+
 ## Completion Report
 
 Report final status with summary of completed work.
@@ -242,6 +256,7 @@ Report final status with summary of completed work.
 ## Done When
 
 - [ ] All tasks in tasks.md completed and marked `[X]`
+- [ ] Central SDLC board in `.specify/BOARD.md` synchronized (finished tasks moved to Done, blockers routed to `@human`)
 - [ ] Implementation validated against specification, plan, and test coverage
 - [ ] Architecture memory delta-refreshed via `specify architecture generate`
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above

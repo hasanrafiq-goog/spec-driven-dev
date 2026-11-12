@@ -64,7 +64,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 2. **Spec Gating Check (CRITICAL)**:
    - Read FEATURE_SPEC (`spec.md`).
    - Scan `spec.md` for any remaining `[NEEDS CLARIFICATION: ...]` markers or pending questions.
-   - **If unresolved clarifications exist**:
+   - **Board Blocker Check**: Check `.specify/BOARD.md` (if it exists). If any ticket for this feature is listed under `## 🛑 Blocked & Awaiting Human Input (@human)` with status `BLOCKED`:
+     - **HALT IMMEDIATELY**:
+       ```text
+       ⛔ HUMAN GATING BLOCKER: Pending Human Input in .specify/BOARD.md
+       This feature has unresolved decisions or blockers assigned to @human:
+       - [List blocker tickets from .specify/BOARD.md]
+
+       You MUST resolve these decisions before generating an implementation plan.
+       Review and sign off on the tickets in .specify/BOARD.md, then re-run /speckit-plan.
+       ```
+     - Stop execution immediately. Do not generate `plan.md`.
+   - **If unresolved clarifications exist in spec.md**:
      - **HALT IMMEDIATELY**: Do NOT proceed to planning or generate `plan.md`.
      - Output an explicit gate error listing the unresolved questions:
        ```text
@@ -183,6 +194,23 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
 
 **Output**: data-model.md, /contracts/*, quickstart.md
 
+### Central SDLC Board Synchronization
+
+You **MUST** synchronize with the central project tracker `.specify/BOARD.md`:
+- If `.specify/BOARD.md` exists:
+  - Update the feature ticket in `## 🟡 Ready for Work`:
+    ```markdown
+    - [ ] **[{FEATURE_ID}]** {FEATURE_TITLE}
+      - **Type**: `Feature`
+      - **Stage**: `Tasks`
+      - **Status**: `READY`
+      - **Assignee**: `@agent-tasks`
+      - **Feature Path**: `{FEATURE_DIR}`
+      - **Tagged Artifacts**: `[{IMPL_PLAN}]({IMPL_PLAN})`, `[{FEATURE_SPEC}]({FEATURE_SPEC})`
+      - **Blocked By**: `None`
+      - **Action / Input Needed**: Ready for `__SPECKIT_COMMAND_TASKS__`.
+    ```
+
 ## Key rules
 
 - Use absolute paths for filesystem operations; use project-relative paths for references in documentation
@@ -191,5 +219,6 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
 ## Done When
 
 - [ ] Plan workflow executed and design artifacts generated
+- [ ] Central SDLC board updated in `.specify/BOARD.md` (Stage updated to Tasks under `Ready for Work`)
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with branch, plan path, and generated artifacts

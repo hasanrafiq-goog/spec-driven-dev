@@ -117,3 +117,43 @@ def test_converge_dual_lens_audit() -> None:
     assert "Continuous Learning Retro" in converge_text
 
 
+def test_central_sdlc_board_synchronization() -> None:
+    board_template = TEMPLATES_DIR / "board-template.md"
+    assert board_template.exists()
+    board_text = board_template.read_text(encoding="utf-8")
+    assert "Blocked & Awaiting Human Input (@human)" in board_text
+    assert "Ready for Work" in board_text
+    assert "In Progress" in board_text
+    assert "Backlog & Clarification Needed" in board_text
+    assert "Done & Converged" in board_text
+
+    specify_text = SPECIFY_CMD.read_text(encoding="utf-8")
+    assert "Central SDLC Board Synchronization" in specify_text
+    assert ".specify/BOARD.md" in specify_text
+    assert "Backlog & Clarification Needed" in specify_text
+
+    clarify_text = CLARIFY_CMD.read_text(encoding="utf-8")
+    assert "Central SDLC Board Synchronization" in clarify_text
+    assert "@human" in clarify_text
+    assert "Blocked & Awaiting Human Input (@human)" in clarify_text
+
+    plan_text = PLAN_CMD.read_text(encoding="utf-8")
+    assert "Board Blocker Check" in plan_text
+    assert "Blocked & Awaiting Human Input (@human)" in plan_text
+    assert ".specify/BOARD.md" in plan_text
+
+    tasks_text = TASKS_CMD.read_text(encoding="utf-8")
+    assert "Central SDLC Board Synchronization" in tasks_text
+    assert ".specify/BOARD.md" in tasks_text
+
+    implement_text = IMPLEMENT_CMD.read_text(encoding="utf-8")
+    assert "Central SDLC Board Synchronization" in implement_text
+    assert "Blocked & Awaiting Human Input (@human)" in implement_text
+    assert "@human" in implement_text
+
+    converge_text = CONVERGE_CMD.read_text(encoding="utf-8")
+    assert "Central SDLC Board Synchronization" in converge_text
+    assert "Done & Converged" in converge_text
+
+
+

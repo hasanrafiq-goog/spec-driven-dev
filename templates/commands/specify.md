@@ -1,10 +1,7 @@
 ---
 description: Create or update the feature specification from a natural language feature description.
 handoffs:
-  - label: Build Technical Plan
-    agent: speckit.plan
-    prompt: Create a plan for the spec. I am building with...
-  - label: Clarify Spec Requirements
+  - label: Clarify Requirements
     agent: speckit.clarify
     prompt: Clarify specification requirements
     send: true
@@ -178,7 +175,7 @@ Given that feature description, do this:
 
       ## Notes
 
-      - Items marked incomplete require spec updates before `__SPECKIT_COMMAND_CLARIFY__` or `__SPECKIT_COMMAND_PLAN__`
+      - Items marked incomplete require spec updates before `__SPECKIT_COMMAND_CLARIFY__`
       ```
 
    b. **Run Validation Check**: Review the spec against each checklist item:
@@ -273,8 +270,30 @@ Report completion to the user with:
 - `SPEC_FILE` — the spec file path
 - Checklist results summary
 - Next step routing:
-  - If `spec.md` contains unresolved `[NEEDS CLARIFICATION]` markers or pending questions: State clearly that the next phase is `__SPECKIT_COMMAND_CLARIFY__`. Warn the user that `__SPECKIT_COMMAND_PLAN__` will reject the spec until all clarifications are resolved.
-  - If `spec.md` has 0 unresolved clarifications: Ready for `__SPECKIT_COMMAND_PLAN__`.
+  - The next phase is **ALWAYS** `__SPECKIT_COMMAND_CLARIFY__`. Clarification is mandatory for all specifications to probe architectural failure seams, disambiguate edge cases, extract domain vocabulary into `GLOSSARY.md`, and record ADRs.
+  - **NEVER** recommend or suggest `__SPECKIT_COMMAND_PLAN__` directly after specify. In the Spec Kit lifecycle, `__SPECKIT_COMMAND_SPECIFY__` must always be followed by `__SPECKIT_COMMAND_CLARIFY__`. Direct execution of plan without clarification will fail architectural gating.
+
+### Central SDLC Board Synchronization
+
+You **MUST** synchronize this feature with the project's central status board `.specify/BOARD.md`:
+- If `.specify/BOARD.md` does not exist, initialize it with the standard Kanban sections:
+  - `## 🛑 Blocked & Awaiting Human Input (@human)`
+  - `## 🟡 Ready for Work`
+  - `## 🚀 In Progress`
+  - `## 📋 Backlog & Clarification Needed`
+  - `## ✅ Done & Converged`
+- Add or update the feature entry under `## 📋 Backlog & Clarification Needed`:
+  ```markdown
+  - [ ] **[{FEATURE_ID}]** {FEATURE_TITLE}
+    - **Type**: `Feature`
+    - **Stage**: `Clarify`
+    - **Status**: `READY`
+    - **Assignee**: `@agent-clarify`
+    - **Feature Path**: `{FEATURE_DIR}`
+    - **Tagged Artifacts**: `[{SPEC_FILE}]({SPEC_FILE})`
+    - **Blocked By**: `None`
+    - **Action / Input Needed**: Run `__SPECKIT_COMMAND_CLARIFY__` for Socratic failure seams, glossary extraction, and ADRs.
+  ```
 
 **NOTE:** Branch creation is handled by the `before_specify` hook (git extension). Spec directory and file creation are always handled by this core command.
 
@@ -342,5 +361,6 @@ Success criteria must be:
 ## Done When
 
 - [ ] Specification written to `SPEC_FILE` and validated against quality checklist
+- [ ] Feature synchronized to `.specify/BOARD.md` under `Backlog & Clarification Needed`
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with feature directory, spec file path, and checklist results

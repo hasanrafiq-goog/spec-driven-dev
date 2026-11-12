@@ -67,6 +67,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Optional**: data-model.md (entities), contracts/ (interface contracts), research.md (decisions), quickstart.md (test scenarios)
    - **IF EXISTS**: Load `/memory/constitution.md` for project principles and governance constraints
    - **Spec Gating Check**: Verify that `spec.md` has no unresolved `[NEEDS CLARIFICATION]` markers or pending questions. If unresolved markers exist, HALT and instruct the user to run `/speckit-clarify` first.
+   - **Board Blocker Check**: Check `.specify/BOARD.md` (if it exists). If any ticket for this feature is listed under `## 🛑 Blocked & Awaiting Human Input (@human)` with status `BLOCKED`, HALT and inform the user that human blockers must be resolved before slicing tasks.
    - Note: Not all projects have all documents. Generate tasks based on what's available.
 
 3. **Execute task generation workflow**:
@@ -92,6 +93,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Dependencies section showing story completion order
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
+
+5. **Central SDLC Board Synchronization**:
+   - If `.specify/BOARD.md` exists:
+     - Under `## 🟡 Ready for Work`, list the generated tasks:
+       - Record each task with its ID, title, status (`READY` for root/unblocked tasks, `BLOCKED` for dependent tasks), assignee (`@agent-implement`), tagged target file paths, and `Blocked By` dependencies (derived from the DAG).
+       - Ensure the parent feature ticket is marked `Stage: Implement`, `Status: READY`.
 
 ## Mandatory Post-Execution Hooks
 
@@ -223,5 +230,6 @@ Every task MUST strictly follow this format:
 ## Done When
 
 - [ ] tasks.md generated with all phases, task IDs, and file paths
+- [ ] Central SDLC board in `.specify/BOARD.md` synchronized with generated task DAG and dependencies
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with task count, story breakdown, and MVP scope
