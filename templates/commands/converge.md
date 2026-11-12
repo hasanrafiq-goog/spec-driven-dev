@@ -70,8 +70,8 @@ of the code relative to the feature's artifacts — no git, no branch comparison
 
 ## Operating Constraints
 
-**APPEND-ONLY, NEVER REWRITE**: The command's **only** write is appending a new
-`## Phase N: Convergence` section to `tasks.md`. It MUST NOT:
+**APPEND-ONLY, NEVER REWRITE**: The command's **only** write to feature docs is appending a new
+`## Phase N: Convergence` section to `tasks.md` (and updating `.specify/BOARD.md` status). It MUST NOT:
 
 - modify `spec.md` or `plan.md` in any way;
 - rewrite, renumber, reorder, or delete any existing task (including tasks from a prior
@@ -247,6 +247,15 @@ Append to the **end** of `tasks.md`, per the append contract:
 - On `converged`: recommend proceeding to review / opening a PR. No further implement pass
   is needed for this feature's specified scope.
   - **Continuous Learning Retro (Optional)**: If any non-trivial test failures, debugging loops, or corrections occurred during implementation, suggest a concise 1-sentence principle to append to `/memory/constitution.md` to prevent recurring friction on future features.
+
+### Central SDLC Board Synchronization
+
+You **MUST** synchronize convergence state with the central board `.specify/BOARD.md`:
+- If `.specify/BOARD.md` exists:
+  - **On `tasks_appended`**:
+    - Add each newly appended convergence task under `## 🟡 Ready for Work` with `Assignee: @agent-implement`, `Status: READY`, tagged with the specific requirement and source file.
+  - **On `converged`**:
+    - Move the feature card and all associated tasks to `## ✅ Done & Converged`.
 
 ### 9. Check for extension hooks
 

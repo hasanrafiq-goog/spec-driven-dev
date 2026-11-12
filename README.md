@@ -153,6 +153,14 @@ Run each phase in your agent chat, reviewing outputs along the way:
 | **`/speckit-implement`** | 4 | Executes tasks incrementally with strict Red-Green-Refactor TDD, Pre-Mutation State Safety Gates, and session checkpoints. |
 | **`/speckit-converge`** | 5 | Self-healing Dual-Lens audit (Spec Traceability + Code Smells) that auto-appends missing tasks until "Converged". |
 
+### 📊 Central SDLC Board & Work Tracker (`.specify/BOARD.md`)
+
+Spec Kit automatically maintains a centralized, git-tracked Kanban board at `.specify/BOARD.md` across all SDLC stages—no manual tracking or extra commands required:
+
+- **Full Lifecycle Visibility**: Managers and developers can open `.specify/BOARD.md` at any time to inspect macro feature stages and micro task progress across the entire repository.
+- **First-Class Human-in-the-Loop (`Assignee: @human`)**: When an agent hits an architectural fork, security boundary, or roadblock (in `/speckit-clarify` or `/speckit-implement`), it routes a ticket directly to `## 🛑 Blocked & Awaiting Human Input (@human)` with tagged file lines and context. Downstream commands like `/speckit-plan` automatically gate and wait until human sign-off is resolved.
+- **Multi-Agent & Swarm Coordination**: Commands automatically move items between `Backlog & Clarification Needed` $\rightarrow$ `Ready for Work` $\rightarrow$ `In Progress` $\rightarrow$ `Done & Converged`, preserving DAG dependencies (`Blocked By: [IDs]`) and clear assignees (`@agent-implement`, `@human`).
+
 ---
 
 ## 🎯 Common User Journeys (CUJs)

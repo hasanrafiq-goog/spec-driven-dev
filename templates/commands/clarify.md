@@ -274,6 +274,35 @@ Check if `.specify/extensions.yml` exists in the project root.
     To execute: `/{command}`
     ```
 
+### Central SDLC Board Synchronization
+
+You **MUST** synchronize with the central project tracker `.specify/BOARD.md`:
+- If `.specify/BOARD.md` exists:
+  - **Human-in-the-Loop Blocker Assignment (@human)**: If any critical architectural decisions, security boundaries, domain trade-offs, or external requirements cannot be resolved autonomously or require human sign-off, add or update a ticket under `## 🛑 Blocked & Awaiting Human Input (@human)`:
+    ```markdown
+    - [ ] **[{FEATURE_ID}-DECISION-{NUM}]** {DECISION_TITLE}
+      - **Type**: `Decision`
+      - **Stage**: `Clarify`
+      - **Status**: `BLOCKED`
+      - **Assignee**: `@human`
+      - **Feature Path**: `{FEATURE_DIR}`
+      - **Tagged Artifacts**: `[{FEATURE_SPEC}#L{LINE}]({FEATURE_SPEC}#L{LINE})`, `[ADR-{NUM}](docs/adr/ADR-{NUM}.md)`
+      - **Blocked By**: `None`
+      - **Context & Human Action Needed**: {Specific question, architectural fork, or trade-off requiring human review}.
+    ```
+  - **When all clarifications are settled**: Move or update the feature entry to `## 🟡 Ready for Work`:
+    ```markdown
+    - [ ] **[{FEATURE_ID}]** {FEATURE_TITLE}
+      - **Type**: `Feature`
+      - **Stage**: `Plan`
+      - **Status**: `READY`
+      - **Assignee**: `@agent-plan`
+      - **Feature Path**: `{FEATURE_DIR}`
+      - **Tagged Artifacts**: `[{FEATURE_SPEC}]({FEATURE_SPEC})`, `[.specify/memory/GLOSSARY.md](.specify/memory/GLOSSARY.md)`
+      - **Blocked By**: `None`
+      - **Action / Input Needed**: Ready for `__SPECKIT_COMMAND_PLAN__`.
+    ```
+
 ## Completion Report
 
 Report completion (after questioning loop ends or early termination):
@@ -288,6 +317,7 @@ Report completion (after questioning loop ends or early termination):
 ## Done When
 
 - [ ] Spec ambiguities identified and clarifications integrated into spec file
+- [ ] Central SDLC board updated in `.specify/BOARD.md` (unresolved forks routed to `@human`, resolved features moved to `Ready for Work`)
 - [ ] Spec quality checklist re-validated against updated spec (if `FEATURE_DIR/checklists/requirements.md` exists)
 - [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
 - [ ] Completion reported to user with questions answered, sections touched, checklist status, and coverage summary
