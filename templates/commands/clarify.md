@@ -126,8 +126,8 @@ Execution steps:
    - Clarification would not materially change implementation or validation strategy
    - The item is specifically about implementation method, tech-stack comparison, or task breakdown (note internally)
 
-4. Generate (internally) a prioritized queue of candidate clarification questions (maximum 5). Do NOT output them all at once. Apply these constraints:
-    - Maximum of 5 total questions across the whole session.
+4. Generate (internally) a prioritized queue of candidate clarification questions. Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled. Batch in rounds of up to 5 questions per interactive round. Apply these constraints:
+    - Queue candidate questions prioritized by impact: architectural forks / data contracts > security posture > operational readiness > UX behavior.
     - Each question must be answerable with EITHER:
        - A short multiple‑choice selection (2–5 distinct, mutually exclusive options), OR
        - A one-word / short‑phrase answer (explicitly constrain: "Answer in <=5 words").
@@ -135,7 +135,7 @@ Execution steps:
     - Ensure category coverage balance: attempt to cover the highest impact unresolved categories first; avoid asking two low-impact questions when a single high-impact area (e.g., security posture) is unresolved.
     - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
     - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
-    - If more than 5 categories remain unresolved, select the top 5 by (Impact * Uncertainty) heuristic.
+    - Present questions in focused interactive batches (up to 5 per round), allowing subsequent rounds until all critical architectural forks are resolved.
 
 5. Sequential questioning loop (interactive):
     - Present EXACTLY ONE question at a time.
@@ -173,9 +173,9 @@ Execution steps:
        - If ambiguous, ask for a quick disambiguation (count still belongs to same question; do not advance).
        - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
     - Stop asking further questions when:
-       - All critical ambiguities resolved early (remaining queued items become unnecessary), OR
-       - User signals completion ("done", "good", "no more"), OR
-       - You reach 5 asked questions.
+       - All critical ambiguities and architectural forks are resolved, OR
+       - User signals completion ("done", "good", "no more", "proceed"), OR
+       - All queued questions for this round are answered and no critical architectural forks remain.
     - Never reveal future queued questions in advance.
     - If no valid questions exist at start, immediately report no critical ambiguities.
 
