@@ -391,11 +391,45 @@ When encountering unexpected defects, regressions, or production incidents:
    ```
 
 2. **Understand, Hypothesize & Isolate**:
-   The agent builds a minimal reproduction script/test, generates 2–3 falsifiable hypotheses, tests them without mutating business code, and outputs a Diagnostic Bundle to `specs/incidents/BUG-###.md`.
+   The agent builds a minimal reproduction script/test, generates 2–3 falsifiable hypotheses, tests them with targeted assertions without mutating business code, and outputs a structured Diagnostic Bundle to `specs/incidents/BUG-###.md`.
 
 3. **Dual-Exit Routing**:
-   - **Ramp B (Specification Gap — Primary)**: If the bug reveals a missing requirement or unhandled edge case, `/speckit-debug` seeds a new living specification (`specs/FIX-###/spec.md`) with failing reproduction assertions as Acceptance Criteria. The fix then proceeds through standard `/speckit-clarify` $\rightarrow$ `/speckit-plan` $\rightarrow$ `/speckit-tasks` $\rightarrow$ `/speckit-implement`, eliminating spec drift.
-   - **Ramp A (Implementation Defect — Escape Valve)**: If the spec was already 100% correct and the issue is a shallow code typo, the agent commits the regression test, applies an atomic fix ($\le$ 3 files), and verifies the suite.
+   - **Ramp A (Implementation Defect — Escape Valve)**: If the existing spec was already 100% accurate and the issue is a shallow code typo, the agent commits the regression test, applies an atomic fix ($\le$ 3 files), and verifies the suite.
+   - **Ramp B (Specification Gap — Primary Flow)**: If the bug reveals a missing requirement, ambiguous boundary, or unhandled edge case, `/speckit-debug` seeds a new living feature spec (`specs/FIX-001-session-token-key-error/spec.md`) with failing reproduction assertions automatically populated as Acceptance Criteria.
+
+4. **Clarify boundary impact & error contracts**:
+
+   ```text
+   /speckit-clarify
+   ```
+
+   The agent probes regression risks, token validation edge cases, and client error contracts against the existing codebase before architectural planning.
+
+5. **Plan the surgical fix**:
+
+   ```text
+   /speckit-plan
+   ```
+
+   The agent evaluates competing interface options ("Design It Twice") and plans the fix with backward-compatibility guarantees.
+
+6. **Decompose into tracer-bullet tasks**:
+
+   ```text
+   /speckit-tasks
+   /speckit-analyze
+   ```
+
+   The agent creates dependency-ordered tasks with regression tests first, followed by cross-artifact consistency auditing.
+
+7. **Implement and converge**:
+
+   ```text
+   /speckit-implement
+   /speckit-converge
+   ```
+
+   The agent executes the regression test (Red), implements the fix (Green), refactors, and runs the Dual-Lens convergence audit to ensure the defect is permanently eliminated with zero spec drift.
 
 ---
 
