@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json  # noqa: F401
 import os  # noqa: F401
+import re
 import shutil  # noqa: F401
 from pathlib import Path  # noqa: F401
 
@@ -143,10 +144,11 @@ class TestParseIntegrationOptionsEqualsForm:
     ],
 )
 def test_script_help_includes_python_variant(args):
-    result = runner.invoke(app, args)
+    result = runner.invoke(app, args, env={"COLUMNS": "120"})
 
     assert result.exit_code == 0
-    assert "sh, ps, or py" in " ".join(strip_ansi(result.output).split())
+    clean_output = " ".join(re.sub(r"[│|]", " ", strip_ansi(result.output)).split())
+    assert "sh, ps, or py" in clean_output
 
 
 class TestIntegrationProjectGuards(IntegrationCatalogCliTestBase):
