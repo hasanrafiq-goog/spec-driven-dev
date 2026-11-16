@@ -385,3 +385,21 @@ class TestAgyHookCommandNote:
         note_line = next((ln for ln in lines if "replace dots" in ln), None)
         assert note_line is not None, "Hook note line should be present"
         assert note_line.startswith("   "), "Note should preserve indentation"
+
+    def test_setup_skips_user_gemini_linking_in_test_env(self, tmp_path, monkeypatch):
+        """In test environment, setup must skip linking into ~/.gemini to avoid clobbering user skills."""
+        from specify_cli.integrations.agy import AgyIntegration
+        from specify_cli.integrations.manifest import IntegrationManifest
+
+        i = AgyIntegration()
+        m = IntegrationManifest(i.key, tmp_path)
+
+        fake_home = tmp_path / "fake_home"
+        fake_gemini_skills = fake_home / ".gemini" / "skills"
+        fake_gemini_skills.mkdir(parents=True)
+        monkeypatch.setattr(Path, "home", lambda: fake_home)
+        monkeypatch.setenv("SPECKIT_TEST_ENV", "1")
+
+        created = i.setup(tmp_path, m, script_type="sh")
+        assert len(created) > 0
+        assert list(fake_gemini_skills.iterdir()) == []

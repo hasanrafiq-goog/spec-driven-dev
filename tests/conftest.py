@@ -312,3 +312,27 @@ def sample_legacy_board_no_fog(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     return board_file
+
+
+@pytest.fixture
+def clarify_template_text(repo_templates_dir: Path) -> str:
+    """Return the contents of templates/commands/clarify.md."""
+    return (repo_templates_dir / "clarify.md").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def specify_template_text(repo_templates_dir: Path) -> str:
+    """Return the contents of templates/commands/specify.md."""
+    return (repo_templates_dir / "specify.md").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def spec_template_text(repo_templates_dir: Path) -> str:
+    """Return the contents of templates/spec-template.md."""
+    return (repo_templates_dir.parent / "spec-template.md").read_text(encoding="utf-8")
+
+
+@pytest.fixture
+def debug_template_text(repo_templates_dir: Path) -> str:
+    """Return the contents of templates/commands/debug.md."""
+    return (repo_templates_dir / "debug.md").read_text(encoding="utf-8")

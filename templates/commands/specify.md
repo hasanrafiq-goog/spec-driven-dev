@@ -136,6 +136,7 @@ Given that feature description, do this:
     8. Return: SUCCESS (spec ready for planning)
 
 7. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+   - Note: The `## Clarifications` section and its `### Confirmed Intent & Non-Goals` subsection in `spec-template.md` are strictly reserved for `__SPECKIT_COMMAND_CLARIFY__`. During `specify`, preserve template comments or leave the section empty/unpopulated; do NOT delete or prematurely populate this section.
 
 8. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
@@ -186,46 +187,17 @@ Given that feature description, do this:
 
       - **If all items pass**: Mark checklist complete and proceed to the Mandatory Post-Execution Hooks section
 
-      - **If items fail (excluding [NEEDS CLARIFICATION])**:
+      - **If non-clarification items fail**:
         1. List the failing items and specific issues
         2. Update the spec to address each issue
         3. Re-run validation until all items pass (max 3 iterations)
         4. If still failing after 3 iterations, document remaining issues in checklist notes and warn user
 
       - **If [NEEDS CLARIFICATION] markers remain**:
-        1. Extract all [NEEDS CLARIFICATION: ...] markers from the spec
-        2. Prioritize clarifications by architectural, security, and contract impact (architecture/contracts > security > scope > UX). Do NOT discard markers on critical architectural forks.
-        3. For each clarification needed, present options to user in this format:
-
-           ```markdown
-           ## Question [N]: [Topic]
-
-           **Context**: [Quote relevant spec section]
-
-           **What we need to know**: [Specific question from NEEDS CLARIFICATION marker]
-
-           **Suggested Answers**:
-
-           | Option | Answer | Implications |
-           |--------|--------|--------------|
-           | A      | [First suggested answer] | [What this means for the feature] |
-           | B      | [Second suggested answer] | [What this means for the feature] |
-           | C      | [Third suggested answer] | [What this means for the feature] |
-           | Custom | Provide your own answer | [Explain how to provide custom input] |
-
-           **Your choice**: _[Wait for user response]_
-           ```
-
-        4. **CRITICAL - Table Formatting**: Ensure markdown tables are properly formatted:
-           - Use consistent spacing with pipes aligned
-           - Each cell should have spaces around content: `| Content |` not `|Content|`
-           - Header separator must have at least 3 dashes: `|--------|`
-           - Test that the table renders correctly in markdown preview
-        5. Number questions sequentially (Q1, Q2, Q3, etc.)
-        6. Present all questions together before waiting for responses
-        7. Wait for user to respond with their choices for all questions (e.g., "Q1: A, Q2: Custom - [details], Q3: B")
-        8. Update the spec by replacing each [NEEDS CLARIFICATION] marker with the user's selected or provided answer
-        9. Re-run validation after all clarifications are resolved
+        1. Preserve all `[NEEDS CLARIFICATION: ...]` markers in the spec without artificial capping or inline guessing.
+        2. Do NOT attempt to ask questions or present inline survey tables in this command.
+        3. Note the count of unresolved clarifications in the checklist notes.
+        4. Route feature directly to `__SPECKIT_COMMAND_CLARIFY__` for deep Socratic interrogation.
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 

@@ -70,7 +70,7 @@ Execution Steps:
 
 ### Phase 2: Hypothesize
 1. Formulate 2–3 mutually exclusive, falsifiable hypotheses explaining why the failure occurs.
-2. For each hypothesis, state the required evidence and the exact observation probe that will confirm or disprove it.
+2. For each hypothesis, state an initial confidence score (0–100%), the missing evidence, and the exact observation probe that will confirm or disprove it without premature guesswork.
 
 ### Phase 3: Isolate
 > ⚠️ **ANTI-SHOTGUN DEBUGGING RULE (CRITICAL)**:
@@ -94,10 +94,10 @@ Generate the incident artifact at `specs/incidents/BUG-{NNN}.md`:
 {DETAILED_FAILURE_SEAM_ANALYSIS}
 
 ## Hypotheses Matrix
-| Hypothesis | Evidence | Result |
-| :--- | :--- | :--- |
-| H1: ... | ... | DISPROVEN |
-| H2: ... | ... | PROVEN |
+| Hypothesis | Initial Confidence | Evidence | Result |
+| :--- | :--- | :--- | :--- |
+| H1: ... | ~30% | ... | DISPROVEN |
+| H2: ... | ~70% | ... | PROVEN |
 
 ## Classification & Ramp Recommendation
 - **Classification**: `SPECIFICATION_GAP` | `IMPLEMENTATION_DEFECT`
