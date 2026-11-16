@@ -89,7 +89,7 @@ Spec-Driven-DevKit maintains a continuously synchronized, category-based archite
 - **Durable Session Checkpointing**: Automatically tracks in-progress features, active phases, and completed task IDs in `.specify/session-checkpoint.json` across IDE/window restarts.
 - **Dual-Lens Convergence**: Evaluates code through both Functional Traceability (Requirements $\leftrightarrow$ Tests) and Code Quality (constitution compliance and anti-pattern detection).
 
-### 7. 🎯 Advanced Engineering Workflows (Matt Pocock Alignment)
+### 7. 🎯 Advanced Engineering Workflows
 
 - **Zero-Command Fog-of-War Ambiguity Engine**: Tracks fuzzy requirements, unknown trade-offs, and architectural spikes directly on `.specify/BOARD.md` (`## 🌫️ Fog of War`). Resolves them natively inside `/speckit-clarify` via 3 dedicated modes:
   1. *Socratic Grilling* (interactive deep dialogue with the user)
