@@ -98,4 +98,3 @@ def test_clarify_originates_autonomous_questions_beyond_specify_markers(clarify_
     assert "AUTONOMOUS DEEP-DIVE INVARIANT" in clarify_template_text
     assert "Autonomous Question Origination Beyond Specify" in clarify_template_text
     assert "NOT limited to pre-existing `[NEEDS CLARIFICATION]` markers" in clarify_template_text
-
