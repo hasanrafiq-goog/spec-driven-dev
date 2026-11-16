@@ -73,7 +73,7 @@ Execution Steps:
 2. For each hypothesis, state the required evidence and the exact observation probe that will confirm or disprove it.
 
 ### Phase 3: Isolate
-> ⚠️ **ANTI-SHOTGUN DEBUGGING RULE (CRITICAL)**:  
+> ⚠️ **ANTI-SHOTGUN DEBUGGING RULE (CRITICAL)**:
 > **DO NOT write fix code during the isolation phase.** Only write assertions and observation probes. If you write fix code before proving a hypothesis, you are guessing.
 
 1. Inject temporary assertions or probes to test each hypothesis in order.

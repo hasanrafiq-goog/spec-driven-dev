@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-import pytest
 
 TRACKER_COMMENT_RE = re.compile(r"<!--\s*tracker:([a-z_]+)#(\S+?)(?:\s+blocked_by:(\S+))?\s*-->")
 

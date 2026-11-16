@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-import pytest
 
 from specify_cli.session.checkpoint import (
     CHECKPOINT_FILE_NAME,

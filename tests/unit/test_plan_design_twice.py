@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 
 
 def test_plan_template_mandates_design_it_twice_phase_1(repo_templates_dir: Path):

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 
 
 def test_spec_template_forbids_internal_file_paths_and_mandates_high_seams(repo_templates_dir: Path):

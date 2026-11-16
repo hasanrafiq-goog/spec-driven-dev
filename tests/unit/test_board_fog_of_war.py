@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-import pytest
 
 
 def parse_board_fog_items(board_text: str) -> list[dict[str, str]]:

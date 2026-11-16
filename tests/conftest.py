@@ -297,7 +297,6 @@ def sample_board_with_fog(tmp_path: Path) -> Path:
     )
     return board_file
 
-
 @pytest.fixture
 def sample_legacy_board_no_fog(tmp_path: Path) -> Path:
     """Create a temporary legacy BOARD.md without a Fog of War section."""
@@ -313,4 +312,3 @@ def sample_legacy_board_no_fog(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     return board_file
-

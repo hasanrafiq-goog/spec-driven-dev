@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 
 from specify_cli import SKILL_DESCRIPTIONS
 from specify_cli.integrations.base import _CORE_COMMAND_TEMPLATE_ORDER

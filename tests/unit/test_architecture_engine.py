@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pytest
 
 from specify_cli.architecture.engine import ArchitectureEngine
 from specify_cli.architecture.models import FileNode
