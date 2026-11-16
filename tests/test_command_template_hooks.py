@@ -30,13 +30,13 @@ _SILENT = "skip hook checking silently"
 # Every clause of the replacement instruction, so that dropping any one of
 # them from the templates fails the test: the manifest could not be read, the
 # parser error is shown, no hooks were checked, mandatory hooks are named, and
-# the command still continues afterwards.
+# execution halts immediately (fail-closed).
 _REPORTED = (
     "could not be read",
     "include the parser error",
     "no hooks were checked",
     "including any mandatory (`optional: false`) hooks",
-    "then continue",
+    "halt immediately",
 )
 
 HOOK_TEMPLATES = sorted(

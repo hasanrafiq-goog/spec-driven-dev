@@ -38,6 +38,7 @@ _COPILOT_CORE_COMMANDS = {
     "clarify",
     "constitution",
     "converge",
+    "debug",
     "implement",
     "plan",
     "specify",

@@ -465,6 +465,7 @@ class TomlIntegrationTests:
         "clarify",
         "constitution",
         "converge",
+        "debug",
         "implement",
         "plan",
         "checklist",

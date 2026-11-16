@@ -33,6 +33,7 @@ Spec-Driven-DevKit eliminates AI hallucinations and context drift through an air
 - **Phase 3.5 — Cross-Artifact Consistency Analysis (`/speckit-analyze`)**: Non-destructively audits `spec.md` ↔ `plan.md` ↔ `tasks.md` for gaps, orphan tasks, or contradictions before writing code.
 - **Phase 4 — Test-Driven Implementation (`/speckit-implement`)**: Builds features incrementally with strict Red-Green-Refactor TDD loops, pre-mutation state safety guardrails (halts before destructive file/schema changes), and durable session checkpointing.
 - **Phase 5 — Self-Healing Convergence (`/speckit-converge`)**: Conducts a Dual-Lens audit (Spec Traceability + Code Smells), builds a Bidirectional Traceability Matrix, and auto-appends any missing work as actionable tasks until 100% converged.
+- **Diagnostic Engine — Root-Cause & Spec Evolution (`/speckit-debug`)**: Disciplined 4-phase root-cause loop (Understand → Hypothesize → Isolate → Output) with anti-shotgun debugging. Converts spec gaps into new living specs (Ramp B) while fast-patching shallow implementation typos (Ramp A).
 
 ### 2. 🤖 Universal Multi-Agent Native Support
 
@@ -87,6 +88,19 @@ Spec-Driven-DevKit maintains a continuously synchronized, category-based archite
 - **Strict Red-Green-Refactor Rhythm**: Verifies that tests actually fail before implementation code is written, eliminating false-positive test suites.
 - **Durable Session Checkpointing**: Automatically tracks in-progress features, active phases, and completed task IDs in `.specify/session-checkpoint.json` across IDE/window restarts.
 - **Dual-Lens Convergence**: Evaluates code through both Functional Traceability (Requirements $\leftrightarrow$ Tests) and Code Quality (constitution compliance and anti-pattern detection).
+
+### 7. 🎯 Advanced Engineering Workflows (Matt Pocock Alignment)
+
+- **Zero-Command Fog-of-War Ambiguity Engine**: Tracks fuzzy requirements, unknown trade-offs, and architectural spikes directly on `.specify/BOARD.md` (`## 🌫️ Fog of War`). Resolves them natively inside `/speckit-clarify` via 3 dedicated modes:
+  1. *Socratic Grilling* (interactive deep dialogue with the user)
+  2. *AFK Research Subagent* (autonomous multi-source codebase/web investigation with ADR synthesis)
+  3. *Zero-Branch Scratchpad Spike* (isolated empirical exploration without Git pollution)
+  Items automatically promote from `UNCERTAIN` to `READY FOR PLAN` once clarified.
+- **Divergent Interface Exploration ("Design It Twice")**: Grounded in Ousterhout's *A Philosophy of Software Design*, `/speckit-plan` evaluates 3 competing interface designs (*Minimal*, *Flexible*, *Default-Simple*) with depth scoring and mandatory ADR synthesis before freezing public contracts.
+- **High-Seam Behavioral Testing**: Acceptance scenarios and user stories specify public module seams without brittle coupling to volatile internal file paths.
+- **3-Phase Expand–Contract Refactoring**: Wide interface refactors in `/speckit-tasks` and `/speckit-implement` are strictly sequenced into *Phase A (Expand: add new interface)* $\rightarrow$ *Phase B (Migrate: incremental caller migration $\le$ 3 files per task)* $\rightarrow$ *Phase C (Contract: deprecate and remove legacy shims)*, keeping CI green at every step.
+- **Root-Cause Diagnostic & Bug Evolution (`/speckit-debug`)**: Replaces speculative "shotgun debugging" with a 4-phase loop (*Understand* $\rightarrow$ *Hypothesize* $\rightarrow$ *Isolate* $\rightarrow$ *Output*) and an anti-shotgun rule requiring a reproducible test before editing code. Specification gaps automatically take **Ramp B** to seed a new living spec (`specs/FIX-###/spec.md`) with failing assertions as Acceptance Criteria; shallow typos take **Ramp A** for atomic Red-Green-Refactor ($\le$ 3 files).
+- **Local-First Issue Tracker Synchronization**: Defaults to 100% offline (`tracker: local`) with zero external network requests. Transparently syncs child tasks and status transitions to GitHub Issues, Linear, or Jira behind existing commands using non-invasive idempotent HTML comments (`<!-- tracker:<type>#<id> -->`). Fallback handling gracefully protects offline development and non-interactive CI builds.
 
 ---
 
@@ -145,21 +159,23 @@ Run each phase in your agent chat, reviewing outputs along the way:
 | **`/speckit-code-analyze`** | Audit | Deep architectural analysis: extracts AST delta-cache (~100ms), maps functional PRDs/JIRA tickets to code, and populates `.specify/memory/architecture/`. |
 | **`/speckit-constitution`** | 0 | Sets non-negotiable project quality bars, tech stack boundaries, and living engineering rules. |
 | **`/speckit-specify`** | 1 | Generates functional specifications (PRDs, user stories, acceptance criteria) with Socratic boundary gating. |
-| **`/speckit-clarify`** | 1.5 | Socratic grilling: probes architectural failure seams, updates ubiquitous glossary (`GLOSSARY.md`), and records ADRs. |
-| **`/speckit-plan`** | 2 | Designs architecture, data models, and contracts with a strict Spec Gating Check that blocks planning if ambiguities remain. |
+| **`/speckit-clarify`** | 1.5 | Socratic grilling: probes architectural failure seams, 3 resolution modes (Grilling, AFK Research, Spike), and auto-promotes Fog-of-War items. |
+| **`/speckit-plan`** | 2 | Evaluates 3 competing interfaces ("Design It Twice"), records ADRs, and designs data models with strict Spec Gating. |
 | **`/speckit-checklist`** | 2.5 | Generates requirements-quality verification checklists. |
-| **`/speckit-tasks`** | 3 | Slices features into vertical tracer-bullet tasks with explicit `(blocked_by: [IDs])` DAG dependencies. |
+| **`/speckit-tasks`** | 3 | Slices features into vertical tracer-bullet tasks, enforces 3-phase Expand–Contract refactoring, and hooks into issue trackers. |
 | **`/speckit-analyze`** | 3.5 | Cross-checks consistency between the spec, plan, and tasks to detect gaps before writing code. |
-| **`/speckit-implement`** | 4 | Executes tasks incrementally with strict Red-Green-Refactor TDD, Pre-Mutation State Safety Gates, and session checkpoints. |
-| **`/speckit-converge`** | 5 | Self-healing Dual-Lens audit (Spec Traceability + Code Smells) that auto-appends missing tasks until "Converged". |
+| **`/speckit-implement`** | 4 | Executes tasks incrementally with strict Red-Green-Refactor TDD, Pre-Mutation State Safety Gates, and live tracker transitions. |
+| **`/speckit-converge`** | 5 | Self-healing Dual-Lens audit (Spec Traceability + Code Smells) that auto-appends missing tasks until "Converged" and closes epics. |
+| **`/speckit-debug`** | Diagnostic | Disciplined root-cause isolation (Understand → Hypothesize → Isolate) with anti-shotgun rule; seeds Ramp B living specs or fast-patches via Ramp A. |
 
 ### 📊 Central SDLC Board & Work Tracker (`.specify/BOARD.md`)
 
 Spec-Driven-DevKit automatically maintains a centralized, git-tracked Kanban board at `.specify/BOARD.md` across all SDLC stages—no manual tracking or extra commands required:
 
 - **Full Lifecycle Visibility**: Managers and developers can open `.specify/BOARD.md` at any time to inspect macro feature stages and micro task progress across the entire repository.
+- **Fog of War Tracking (`## 🌫️ Fog of War`)**: Captures raw initiatives, ambiguous requirements, and architectural spikes before formal specification, preventing premature commitment.
 - **First-Class Human-in-the-Loop (`Assignee: @human`)**: When an agent hits an architectural fork, security boundary, or roadblock (in `/speckit-clarify` or `/speckit-implement`), it routes a ticket directly to `## 🛑 Blocked & Awaiting Human Input (@human)` with tagged file lines and context. Downstream commands like `/speckit-plan` automatically gate and wait until human sign-off is resolved.
-- **Multi-Agent & Swarm Coordination**: Commands automatically move items between `Backlog & Clarification Needed` $\rightarrow$ `Ready for Work` $\rightarrow$ `In Progress` $\rightarrow$ `Done & Converged`, preserving DAG dependencies (`Blocked By: [IDs]`) and clear assignees (`@agent-implement`, `@human`).
+- **Multi-Agent & Swarm Coordination**: Commands automatically move items between `Fog of War` $\rightarrow$ `Backlog & Clarification Needed` $\rightarrow$ `Ready for Work` $\rightarrow$ `In Progress` $\rightarrow$ `Done & Converged`, preserving DAG dependencies (`Blocked By: [IDs]`) and clear assignees (`@agent-implement`, `@human`).
 
 ---
 
@@ -344,15 +360,15 @@ When restructuring complex legacy code without altering business behavior:
 
    The agent interrogates critical refactoring seams: public API backward compatibility, performance benchmarks, concurrency safety, and zero-downtime cutover strategies.
 
-3. **Design target architecture and test matrix**:
+3. **Design target architecture, interface options & refactor phases**:
 
    ```text
    /speckit-plan
    ```
 
-   Generates a refactoring plan that maps current behavior to the new architecture.
+   Evaluates 3 competing interfaces ("Design It Twice") and structures the refactor into Expand–Contract phases.
 
-4. **Decompose, build safety harnesses, and execute**:
+4. **Decompose into 3-phase Expand–Contract tasks**:
 
    ```text
    /speckit-tasks
@@ -360,7 +376,26 @@ When restructuring complex legacy code without altering business behavior:
    /speckit-converge
    ```
 
-   The agent creates comprehensive characterization tests first, refactors module-by-module, and verifies parity against existing test suites.
+   The agent creates comprehensive characterization tests first, executes Phase A (Expand: new interface), Phase B (Migrate: callers $\le$ 3 files per task), and Phase C (Contract: cleanup), verifying green tests at every step.
+
+---
+
+### Journey 5: Root-Cause Debugging & Bug Evolution (`/speckit-debug`)
+
+When encountering unexpected defects, regressions, or production incidents:
+
+1. **Invoke the disciplined diagnostic loop**:
+
+   ```text
+   /speckit-debug Authentication tokens intermittently fail validation with a KeyError in verify_session()
+   ```
+
+2. **Understand, Hypothesize & Isolate**:
+   The agent builds a minimal reproduction script/test, generates 2–3 falsifiable hypotheses, tests them without mutating business code, and outputs a Diagnostic Bundle to `specs/incidents/BUG-###.md`.
+
+3. **Dual-Exit Routing**:
+   - **Ramp B (Specification Gap — Primary)**: If the bug reveals a missing requirement or unhandled edge case, `/speckit-debug` seeds a new living specification (`specs/FIX-###/spec.md`) with failing reproduction assertions as Acceptance Criteria. The fix then proceeds through standard `/speckit-clarify` $\rightarrow$ `/speckit-plan` $\rightarrow$ `/speckit-tasks` $\rightarrow$ `/speckit-implement`, eliminating spec drift.
+   - **Ramp A (Implementation Defect — Escape Valve)**: If the spec was already 100% correct and the issue is a shallow code typo, the agent commits the regression test, applies an atomic fix ($\le$ 3 files), and verifies the suite.
 
 ---
 

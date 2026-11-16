@@ -1,5 +1,5 @@
 ---
-description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.
+description: Identify underspecified areas in the current feature spec through Socratic grilling, asking targeted clarification questions and encoding answers back into the spec.
 handoffs:
   - label: Build Technical Plan
     agent: speckit.plan
@@ -23,7 +23,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before clarification)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_clarify` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -126,7 +126,19 @@ Execution steps:
    - Clarification would not materially change implementation or validation strategy
    - The item is specifically about implementation method, tech-stack comparison, or task breakdown (note internally)
 
-4. Generate (internally) a prioritized queue of candidate clarification questions. Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled. Batch in rounds of up to 5 questions per interactive round. Apply these constraints:
+4. **Determine Resolution Mode**:
+   Clarification supports 3 distinct ambiguity-resolution modes depending on the nature of the unknown:
+   - **Mode A: Socratic Grilling (Human-in-the-Loop)**:
+     - *Use when*: Human-decidable domain tradeoffs, user requirements, or business policies require clarification.
+     - *Protocol*: Interactive sequential questioning loop (detailed below).
+   - **Mode B: AFK Research Subagent (Deep Study)**:
+     - *Use when*: External libraries, third-party APIs, legacy subsystems, or unfamiliar technologies require deep investigation.
+     - *Protocol*: Dispatches background exploration task, analyzes documentation, and synthesizes findings into an Architectural Decision Record (`docs/adr/ADR-####-<topic>.md`).
+   - **Mode C: Prototype Spike (Zero-Branch Scratchpad)**:
+     - *Use when*: Empirical validation is needed (e.g., verifying an API payload, benchmark latency, or streaming capability).
+     - *Protocol*: Executes in an isolated scratchpad directory (`specs/<feature>/spikes/<name>/` or temporary workspace) with **zero Git branch creation or switching**, preserving working tree safety. Findings and minimal snippets are synthesized into the spec and scratchpad files are cleaned up or preserved under `spikes/`.
+
+5. Generate (internally) a prioritized queue of candidate clarification questions. Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled. Batch in rounds of up to 5 questions per interactive round. Apply these constraints:
     - Queue candidate questions prioritized by impact: architectural forks / data contracts > security posture > operational readiness > UX behavior.
     - Each question must be answerable with EITHER:
        - A short multiple‑choice selection (2–5 distinct, mutually exclusive options), OR
@@ -236,7 +248,7 @@ Behavior rules:
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").
 - If no questions asked due to full coverage, output a compact coverage summary (all categories Clear) then suggest advancing.
-- If quota reached with unresolved high-impact categories remaining, explicitly flag them under Deferred with rationale.
+- If any high-impact categories remain deferred or unresolved, explicitly flag them under Deferred with rationale.
 
 Context for prioritization: {ARGS}
 
@@ -247,7 +259,7 @@ Context for prioritization: {ARGS}
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_clarify`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_clarify` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -302,6 +314,7 @@ You **MUST** synchronize with the central project tracker `.specify/BOARD.md`:
       - **Blocked By**: `None`
       - **Action / Input Needed**: Ready for `__SPECKIT_COMMAND_PLAN__`.
     ```
+  - **Fog of War Resolution**: If this clarification resolved an item residing in `## 🌫️ Fog of War (Not Yet Specified)`, update its status to `RESOLVED` and promote the unblocked feature or task to `## 🟡 Ready for Work` (or `Backlog`) with `Stage: Plan`.
 
 ## Completion Report
 
