@@ -219,7 +219,7 @@ class MarkdownIntegrationTests:
     # -- Complete file inventory ------------------------------------------
 
     COMMAND_STEMS = [
-        "analyze", "clarify", "constitution", "converge", "implement",
+        "analyze", "clarify", "constitution", "converge", "debug", "implement",
         "plan", "checklist", "specify", "tasks", "taskstoissues",
     ]
 

@@ -1210,9 +1210,10 @@ def register(app: typer.Typer) -> None:
         enhancement_lines = [
             enhancement_intro,
             "",
-            f"○ [cyan]{_display_cmd('clarify')}[/] [bright_black](optional)[/bright_black] - Ask structured questions to de-risk ambiguous areas before planning (run before [cyan]{_display_cmd('plan')}[/] if used)",
+            f"○ [cyan]{_display_cmd('clarify')}[/] - Socratic clarification to resolve ambiguities before planning (mandatory when [NEEDS CLARIFICATION] exists)",
             f"○ [cyan]{_display_cmd('analyze')}[/] [bright_black](optional)[/bright_black] - Cross-artifact consistency & alignment report (after [cyan]{_display_cmd('tasks')}[/], before [cyan]{_display_cmd('implement')}[/])",
             f"○ [cyan]{_display_cmd('checklist')}[/] [bright_black](optional)[/bright_black] - Generate quality checklists to validate requirements completeness, clarity, and consistency (after [cyan]{_display_cmd('plan')}[/])",
+            f"○ [cyan]{_display_cmd('debug')}[/] [bright_black](optional)[/bright_black] - Root-cause diagnosis with minimal reproduction to evolve living specs (anytime bugs occur)",
         ]
         enhancements_title = (
             "Enhancement Skills" if native_skill_mode else "Enhancement Commands"

@@ -15,6 +15,11 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
 
+  HIGH-SEAM TESTING & PATH-INDEPENDENCE (CRITICAL):
+  Specifications MUST be described at the high public module seam (observable user/caller behavior).
+  DO NOT mention internal file paths, private class names, or implementation directories in user stories or acceptance scenarios.
+  Keeping specifications file-path agnostic ensures tests target stable contracts and survive internal refactoring.
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently

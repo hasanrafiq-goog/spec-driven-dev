@@ -236,3 +236,79 @@ def unsupported_argv0(monkeypatch, tmp_path):
     return _fake_self_upgrade_argv0(
         monkeypatch, tmp_path, "HOME", ("random", "location", "bin")
     )
+
+
+@pytest.fixture
+def temp_specify_project(tmp_path: Path) -> Path:
+    """Create a temporary initialized Spec Kit project directory."""
+    project_dir = tmp_path / "test_project"
+    project_dir.mkdir(parents=True, exist_ok=True)
+    (project_dir / ".specify").mkdir(parents=True, exist_ok=True)
+    return project_dir
+
+
+@pytest.fixture
+def multi_module_sample_repo(tmp_path: Path) -> Path:
+    """Create a temporary multi-module project with identical file stems for collision testing."""
+    root = tmp_path / "sample_repo"
+    auth_dir = root / "src" / "auth"
+    billing_dir = root / "src" / "billing"
+    auth_dir.mkdir(parents=True, exist_ok=True)
+    billing_dir.mkdir(parents=True, exist_ok=True)
+
+    # Identical stems across distinct packages
+    (auth_dir / "models.py").write_text(
+        "class UserModel:\n    pass\n", encoding="utf-8"
+    )
+    (billing_dir / "models.py").write_text(
+        "from src.auth.models import UserModel\nclass InvoiceModel:\n    pass\n",
+        encoding="utf-8",
+    )
+    (billing_dir / "service.py").write_text(
+        "from .models import InvoiceModel\n", encoding="utf-8"
+    )
+    return root
+
+
+@pytest.fixture
+def repo_templates_dir() -> Path:
+    """Return the absolute path to the repository's templates/commands directory."""
+    return Path(__file__).resolve().parent.parent / "templates" / "commands"
+
+
+@pytest.fixture
+def sample_board_with_fog(tmp_path: Path) -> Path:
+    """Create a temporary BOARD.md containing a Fog of War section."""
+    board_file = tmp_path / "BOARD.md"
+    board_file.write_text(
+        "# 📋 Project SDLC Board & Work Tracker\n\n"
+        "## 🛑 Blocked & Awaiting Human Input (@human)\n\n"
+        "## 🌫️ Fog of War (Not Yet Specified)\n"
+        "- [ ] **[FOG-001]** Explore streaming telemetry\n"
+        "  - **Type**: `Fog`\n"
+        "  - **Status**: `UNCERTAIN`\n"
+        "  - **Resolution Mode**: `RESEARCH`\n\n"
+        "## 🟡 Ready for Work\n"
+        "- [ ] **[FEAT-001]** Core feature\n\n"
+        "## 🚀 In Progress\n\n"
+        "## 📋 Backlog & Clarification Needed\n\n"
+        "## ✅ Done & Converged\n",
+        encoding="utf-8",
+    )
+    return board_file
+
+@pytest.fixture
+def sample_legacy_board_no_fog(tmp_path: Path) -> Path:
+    """Create a temporary legacy BOARD.md without a Fog of War section."""
+    board_file = tmp_path / "BOARD.md"
+    board_file.write_text(
+        "# 📋 Project SDLC Board & Work Tracker\n\n"
+        "## 🛑 Blocked & Awaiting Human Input (@human)\n\n"
+        "## 🟡 Ready for Work\n"
+        "- [ ] **[FEAT-001]** Core feature\n\n"
+        "## 🚀 In Progress\n\n"
+        "## 📋 Backlog & Clarification Needed\n\n"
+        "## ✅ Done & Converged\n",
+        encoding="utf-8",
+    )
+    return board_file

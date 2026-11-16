@@ -19,7 +19,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before implementation)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_implement` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -166,7 +166,8 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 7. Execute implementation following the task plan:
    - **Phase-by-phase execution**: Complete each phase before moving to the next
-   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
+   - **Single-Writer Safety Invariant**: All code-modifying, configuration-modifying, or file-writing tasks MUST execute strictly sequentially (`[S]`) against the primary working tree. Immediately after each code task completes, run the automated test suite. If tests fail, halt and fix the failure before moving to the next task.
+   - **Read-Only Concurrency**: Concurrency (`[P]`) is strictly reserved for read-only inspection, exploratory code analysis, and multi-lens review audits. Never dispatch concurrent code mutations across multiple agents or branches.
    - **Strict Red-Green-Refactor Rhythm (TDD)**:
      - **Red (Verify Failure)**: When executing test tasks, write the test and **run the test runner to observe it fail**. Verify the failure is specifically due to the missing functionality. If a test passes before code is written, investigate for false-positive test logic.
      - **Green (Minimal Pass)**: Write the minimal implementation code necessary to satisfy the test. Re-run the test suite to confirm it passes.
@@ -189,6 +190,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT**: For completed tasks, make sure to mark the task off as [X] in the tasks file.
    - **Session Checkpoint**: Record progress in `.specify/session-checkpoint.json` (or via `specify session checkpoint`) updating completed task IDs and active phase to ensure session continuity across restarts.
+   - **Tracker Status Synchronization**: When an external issue tracker is enabled (`tracker: github` / `linear` / `jira`) and a task tagged with `<!-- tracker:... -->` completes and passes tests, the background hook automatically transitions the remote tracker issue status to `Done`. In `tracker: local` mode, no external network requests are made.
 
 10. Completion validation:
    - Verify all required tasks are completed
@@ -209,7 +211,7 @@ Note: This command assumes a complete task breakdown exists in tasks.md. If task
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_implement`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_implement` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable

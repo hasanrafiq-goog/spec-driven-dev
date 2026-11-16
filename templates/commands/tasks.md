@@ -28,7 +28,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before tasks generation)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_tasks` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -86,7 +86,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
+   - Each phase includes: story goal, independent test criteria, mandatory failing test tasks (TDD), implementation tasks
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
@@ -100,6 +100,13 @@ You **MUST** consider the user input before proceeding (if not empty).
        - Record each task with its ID, title, status (`READY` for root/unblocked tasks, `BLOCKED` for dependent tasks), assignee (`@agent-implement`), tagged target file paths, and `Blocked By` dependencies (derived from the DAG).
        - Ensure the parent feature ticket is marked `Stage: Implement`, `Status: READY`.
 
+6. **Local-First Issue Tracker Synchronization (Optional Background Hook)**:
+   - **Local Default**: Issue tracking defaults to `tracker: local` (100% offline, zero network requests, zero required API keys).
+   - **Remote Synchronization**: When an external issue tracker is enabled (`tracker: github` / `linear` / `jira`), background hooks silently create child issues under the feature epic and tag each task with an idempotent metadata comment:
+     `- [ ] T001 Description <!-- tracker:github#123 -->`
+   - Re-running tasks MUST preserve existing `<!-- tracker:... -->` tags and avoid creating duplicate tickets.
+   - **Failure Handling**: If a remote sync call fails during interactive execution, prompt the user with `[R]etry / [C]ontinue local / [D]isable`. In non-interactive/CI environments, fall back automatically to local-only with a logged warning.
+
 ## Mandatory Post-Execution Hooks
 
 **You MUST complete this section before reporting completion to the user.**
@@ -107,7 +114,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_tasks`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_tasks` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -152,7 +159,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Mandatory TDD (Red-Green-Refactor)**: Every user story phase MUST include automated test tasks scheduled before implementation. Tests must be written and observed to fail before implementation code is written.
 
 ### Checklist Format (REQUIRED)
 
@@ -180,7 +187,8 @@ Every task MUST strictly follow this format:
 
 - ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
 - ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
-- ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
+- ✅ CORRECT: `- [ ] T010 [P] [US1] Write failing contract test in tests/contract/test_user.py`
+- ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py (blocked_by: [T010])`
 - ✅ CORRECT: `- [ ] T014 [US1] Implement UserService in src/services/user_service.py (blocked_by: [T012])`
 - ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
 - ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
@@ -192,20 +200,21 @@ Every task MUST strictly follow this format:
 1. **Vertical Tracer-Bullet Slicing (CRITICAL)**:
    - **Vertical over Horizontal**: Do NOT group tasks by horizontal architectural layers (e.g., all database models in phase 1, all services in phase 2). Slice vertically per user story so each phase delivers an end-to-end, testable increment.
    - **Atomic Blast Radius**: Each individual task must touch $\le$ 3 files. If a task requires modifying more than 3 files, break it into smaller vertical subtasks.
+   - **Expand–Contract Pattern for Wide Refactors**: Any task modifying shared public interfaces MUST follow Expand–Contract (Phase 1: Expand new interface $\rightarrow$ Phase 2: Migrate call sites incrementally $\le 3$ files $\rightarrow$ Phase 3: Contract deprecated interface) to ensure intermediate tests never break.
    - **DAG Blocked-By Dependencies**: For tasks that depend on outputs from earlier tasks, append `(blocked_by: [T###])`. Tasks without dependencies should be tagged `[P]` for parallel dispatch.
 
 2. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
    - Each user story (P1, P2, P3...) gets its own phase
    - Map all related components to their story:
+     - Automated tests specific to that story (failing test tasks scheduled first)
      - Models needed for that story
      - Services needed for that story
      - Interfaces/UI needed for that story
-     - If tests requested: Tests specific to that story
    - Mark story dependencies (most stories should be independent)
 
 3. **From Contracts**:
    - Map each interface contract → to the user story it serves
-   - If tests requested: Each interface contract → contract test task [P] before implementation in that story's phase
+   - Each interface contract → contract test task [P] before implementation in that story's phase
 
 4. **From Data Model**:
    - Map each entity to the user story(ies) that need it
@@ -223,7 +232,7 @@ Every task MUST strictly follow this format:
 - **Phase 1**: Setup (project initialization)
 - **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
 - **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
+  - Within each story: Mandatory Failing Tests (TDD) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
 

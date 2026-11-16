@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import collections
+import os
 import time
 from pathlib import Path
 from typing import Sequence
@@ -232,11 +234,12 @@ class ArchitectureEngine:
         for p in ALL_PARSERS:
             code_exts.update(p.extensions)
 
-        # Walk project
-        for root, dirs, files in self.project_root.walk():
+        # Walk project using os.walk for Python 3.11+ cross-version compatibility
+        for root_str, dirs, files in os.walk(self.project_root):
             # Prune ignored directories
             dirs[:] = [d for d in dirs if d not in IGNORED_DIRS and not d.startswith(".")]
 
+            root = Path(root_str)
             rel_root = root.relative_to(self.project_root)
             rel_root_str = str(rel_root).replace("\\", "/")
 
@@ -314,18 +317,79 @@ class ArchitectureEngine:
 
     def _resolve_file_dependencies(self, files: dict[str, FileNode]) -> dict[str, list[str]]:
         file_deps: dict[str, list[str]] = {}
-        # Map stem and file parts to path
-        stem_map: dict[str, str] = {}
+
+        module_path_map: dict[str, str] = {}
+        stem_candidates: dict[str, list[str]] = collections.defaultdict(list)
+
         for path in files.keys():
-            stem = Path(path).stem
-            stem_map[stem] = path
+            p = Path(path)
+            stem = p.stem
+            stem_candidates[stem].append(path)
+
+            # Store normalized path without extension (both slash and dot notation)
+            posix_no_ext = str(p.with_suffix("")).replace("\\", "/")
+            module_path_map[posix_no_ext] = path
+            module_path_map[posix_no_ext.replace("/", ".")] = path
+
+            # Strip common src/ or lib/ prefixes for root-relative imports
+            for prefix in ("src/", "lib/", "app/"):
+                if posix_no_ext.startswith(prefix):
+                    trimmed = posix_no_ext[len(prefix):]
+                    module_path_map[trimmed] = path
+                    module_path_map[trimmed.replace("/", ".")] = path
 
         for src_path, fnode in files.items():
             deps: set[str] = set()
-            for imp in fnode.imports:
-                imp_stem = imp.split(".")[-1].split("/")[-1].replace('"', "").replace("'", "")
-                if imp_stem in stem_map and stem_map[imp_stem] != src_path:
-                    deps.add(stem_map[imp_stem])
+            src_p = Path(src_path)
+            src_dir = str(src_p.parent).replace("\\", "/")
+
+            for raw_imp in fnode.imports:
+                imp = raw_imp.strip().strip("\"'").replace("\\", "/")
+                norm_imp = imp.lstrip("./")
+
+                resolved: str | None = None
+
+                # 1. Exact module match (dot or slash)
+                if imp in module_path_map:
+                    resolved = module_path_map[imp]
+                elif norm_imp in module_path_map:
+                    resolved = module_path_map[norm_imp]
+                elif norm_imp.replace(".", "/") in module_path_map:
+                    resolved = module_path_map[norm_imp.replace(".", "/")]
+
+                # 2. Relative to importing file's directory
+                if not resolved and src_dir and src_dir != ".":
+                    rel_candidate_slash = f"{src_dir}/{norm_imp}".replace(".", "/")
+                    rel_candidate_dot = f"{src_dir.replace('/', '.')}.{norm_imp}"
+                    if rel_candidate_slash in module_path_map:
+                        resolved = module_path_map[rel_candidate_slash]
+                    elif rel_candidate_dot in module_path_map:
+                        resolved = module_path_map[rel_candidate_dot]
+
+                # 3. Suffix match (e.g. 'auth.models' matches '.../auth/models.py')
+                if not resolved and "." in norm_imp:
+                    slash_suffix = norm_imp.replace(".", "/")
+                    for mod_key, target_file in module_path_map.items():
+                        if mod_key.endswith(slash_suffix):
+                            resolved = target_file
+                            break
+
+                # 4. Unambiguous stem fallback
+                if not resolved:
+                    imp_stem = norm_imp.split(".")[-1].split("/")[-1]
+                    candidates = stem_candidates.get(imp_stem, [])
+                    if len(candidates) == 1:
+                        resolved = candidates[0]
+                    elif len(candidates) > 1 and src_dir and src_dir != ".":
+                        # If multiple candidates share stem, prefer sibling in same directory
+                        for c in candidates:
+                            if str(Path(c).parent).replace("\\", "/") == src_dir:
+                                resolved = c
+                                break
+
+                if resolved and resolved != src_path:
+                    deps.add(resolved)
+
             file_deps[src_path] = sorted(deps)
 
         return file_deps

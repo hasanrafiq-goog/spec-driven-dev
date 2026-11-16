@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
@@ -17,6 +20,7 @@ SessionPhase = Literal[
     "tasks",
     "implement",
     "converge",
+    "debug",
     "unknown",
 ]
 
@@ -46,6 +50,13 @@ def load_session_checkpoint(project_root: Path) -> SessionCheckpoint | None:
         data = json.loads(path.read_text(encoding="utf-8"))
         return SessionCheckpoint.model_validate(data)
     except Exception:
+        # Corrupted or unparseable checkpoint detected; create timestamped backup before reset
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        backup_path = path.parent / f"session-checkpoint.corrupt.{timestamp}.json"
+        try:
+            shutil.copy2(path, backup_path)
+        except OSError:
+            pass
         return None
 
 
@@ -53,7 +64,16 @@ def save_session_checkpoint(project_root: Path, checkpoint: SessionCheckpoint) -
     path = get_checkpoint_path(project_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     checkpoint.updated_at = datetime.now(timezone.utc).isoformat()
-    path.write_text(checkpoint.model_dump_json(indent=2), encoding="utf-8")
+    content = checkpoint.model_dump_json(indent=2)
+
+    # Write atomically via temp file in the same directory and rename
+    with tempfile.NamedTemporaryFile("w", dir=path.parent, delete=False, encoding="utf-8") as tf:
+        temp_name = tf.name
+        tf.write(content)
+        tf.flush()
+        os.fsync(tf.fileno())
+
+    os.replace(temp_name, path)
     return path
 
 

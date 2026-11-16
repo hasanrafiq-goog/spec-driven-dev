@@ -20,7 +20,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_converge` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -146,11 +146,21 @@ Create an internal model (do not echo raw artifacts):
   components in scope for assessment. Bound the assessment to these — do **not** infer
   scope beyond what the artifacts define.
 
-### 4. Assess the Codebase via Dual-Lens Audit
+### 4. Assess the Codebase via Dual-Lens Audit (Context-Isolated Subagents)
 
-Assess the codebase through two rigorous lenses:
+To prevent cognitive attention dilution on large diffs, audit the codebase through two rigorous lenses:
 - **Lens 1 (Spec & Requirement Traceability)**: Did we build everything specified in `spec.md`, `plan.md`, and `tasks.md` without omitting any FR-### or acceptance criteria? Does any code introduce unrequested functionality or scope creep?
 - **Lens 2 (Code Quality & Anti-Patterns)**: Does the implementation introduce architecture violations, dead code, unhandled error cases, missing assertions in tests, or constitution MUST/SHOULD regressions?
+
+**Adaptive Subagent Dispatch**:
+- **Check Subagent Capability**: Check if subagent invocation tools (`invoke_subagent`, `run_workflow`, or `subagent`) are available in your agent host environment.
+- **When Subagents Are Supported**:
+  - Dispatch **Subagent 1 (Lens 1: Spec Traceability)** with read-only inspection scope focused on requirements completeness, acceptance criteria, and edge cases.
+  - Concurrently dispatch **Subagent 2 (Lens 2: Quality & Architecture)** with read-only inspection scope focused on code standards, typing, error resilience, and anti-patterns.
+  - The coordinator awaits both reports and merges their findings into the unified Findings inventory.
+- **When Subagents Are Unavailable (Single-Session Fallback)**:
+  - Execute Lens 1 audit completely across all in-scope files.
+  - Reset attention and execute Lens 2 audit in a second distinct pass before synthesizing findings.
 
 Include every existing task in the intent inventory, regardless of checkbox state or
 Convergence phase: completion claims are not evidence. Verify current behavior against
@@ -256,13 +266,14 @@ You **MUST** synchronize convergence state with the central board `.specify/BOAR
     - Add each newly appended convergence task under `## 🟡 Ready for Work` with `Assignee: @agent-implement`, `Status: READY`, tagged with the specific requirement and source file.
   - **On `converged`**:
     - Move the feature card and all associated tasks to `## ✅ Done & Converged`.
+    - If an external issue tracker is enabled (`tracker: github` / `linear` / `jira`), transition the parent feature epic / issue to closed/completed in the remote tracker. In `tracker: local` mode, no external network requests are made.
 
 ### 9. Check for extension hooks
 
 After producing the result, check if `.specify/extensions.yml` exists in the project root.
 
 - If it exists, read it and look for entries under the `hooks.after_converge` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable

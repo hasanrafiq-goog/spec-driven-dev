@@ -27,7 +27,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **Check for extension hooks (before planning)**:
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_plan` key
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -114,7 +114,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Check if `.specify/extensions.yml` exists in the project root.
 - If it does not exist, or no hooks are registered under `hooks.after_plan`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_plan` key.
-- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
+- If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then halt immediately with a fatal error.
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
 - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
   - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
@@ -149,10 +149,9 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
 
 ### Phase 0: Outline & Research
 
-1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+1. **Extract technical unknowns and decisions from Technical Context** above:
+   - For each technical choice or library → best practices & evaluation task
+   - For each dependency or integration → architecture patterns task
 
 2. **Generate and dispatch research agents**:
 
@@ -168,7 +167,7 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
 
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+**Output**: research.md with all technical architecture and dependency decisions resolved
 
 ### Phase 1: Design & Contracts
 
@@ -179,13 +178,21 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
    - Validation rules from requirements
    - State transitions if applicable
 
-2. **Define interface contracts** (if project has external interfaces) → `/contracts/`:
-   - Identify what interfaces the project exposes to users or other systems
+2. **Divergent Interface Exploration ("Design It Twice")**:
+   - Grounded in John Ousterhout's *A Philosophy of Software Design* (modules should be deep: hiding large complexity behind simple, small interfaces).
+   - Whenever introducing or changing public interfaces, CLI commands, or module seams, evaluate at least 3 competing design alternatives:
+     1. **Minimal Interface**: Fewest entry points (1–3), maximum information hiding, deep module seam.
+     2. **Maximum Flexibility**: Pluggable strategies, configurable adapters, extensible lifecycle hooks.
+     3. **Default-Case Simplicity**: Zero-configuration ergonomics, sensible defaults, intuitive developer experience.
+   - Score module depth at the seam and synthesize the selected trade-offs into an Architectural Decision Record (`docs/adr/ADR-####-<feature>-interface-design.md`).
+
+3. **Define interface contracts** (if project has external interfaces) → `/contracts/`:
+   - Identify what interfaces the project exposes to users or other systems (incorporating the synthesized "Design It Twice" decisions)
    - Document the contract format appropriate for the project type
    - Examples: public APIs for libraries, command schemas for CLI tools, endpoints for web services, grammars for parsers, UI contracts for applications
    - Skip if project is purely internal (build scripts, one-off tools, etc.)
 
-3. **Create quickstart validation guide** → `quickstart.md`:
+4. **Create quickstart validation guide** → `quickstart.md`:
    - Document runnable validation scenarios that prove the feature works end-to-end
    - Include prerequisites, setup commands, test/run commands, and expected outcomes
    - Use links or references to contracts and data model details instead of duplicating them

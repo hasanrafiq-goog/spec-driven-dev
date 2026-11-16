@@ -50,6 +50,7 @@ _CORE_COMMAND_TEMPLATE_ORDER = (
     "converge",
     "plan",
     "checklist",
+    "debug",
     "specify",
     "tasks",
     "taskstoissues",
