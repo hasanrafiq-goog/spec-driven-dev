@@ -142,13 +142,24 @@ Execution steps:
      - *Protocol*: Executes in an isolated scratchpad directory (`specs/<feature>/spikes/<name>/` or temporary workspace) with **zero Git branch creation or switching**, preserving working tree safety. Findings and minimal snippets are synthesized into the spec and scratchpad files are cleaned up or preserved under `spikes/`.
 
 5. **Dynamic Socratic Questioning Loop & Stance**:
+   - **The Design Tree & Frontier Mental Model**:
+     Do NOT treat clarification as a flat checklist of `[NEEDS CLARIFICATION]` markers from `__SPECKIT_COMMAND_SPECIFY__`. Map the system as a **Design Tree**: every architectural decision branches into the child decisions that hang off it.
+     Work the tree in sequential probes along the **Frontier**. The **frontier** is every decision whose prerequisites are already settled: the questions you can ask *now* without guessing at answers you haven't heard yet.
+     Settling an initial decision (e.g. backend transport or basic CRUD) does NOT end clarification—it pushes the frontier outward and unblocks downstream child decisions:
+     - *Client & Rendering Environment*: Offline/air-gapped resilience, corporate VPN/firewall CDN blocking, local asset bundling.
+     - *Data Contract & State Lifecycle*: Multi-run reset, idempotency, schema evolution, versioning.
+     - *Concurrency & Error Boundaries*: Catastrophic 6-month pre-mortem failure seams.
+   - **Separation of Facts vs. Decisions (Autonomous Fact Hunting)**:
+     Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, codebase AST, existing dependencies, configuration), use your tools to look it up autonomously; NEVER ask the user for anything you could inspect yourself. The _decisions_ (trade-offs, user requirements, business boundaries) are the user's: formulate each decision as an opinionated probe and wait.
    - **Hypothesis-First Read & Dynamic Confidence Scoring**:
      Before asking any questions, the agent MUST assess its internal mental model and output its initial hypothesis and confidence:
      ```text
      HYPOTHESIS: <One sentence capturing the underlying user need beneath the conventional request>
      CONFIDENCE: ~X% — missing: <exact unresolved blind spots: who it's for, binding constraint, or failure mode>
      ```
-     Confidence is scored on a 0–100% scale and must be dynamically updated as questions are answered. Confidence cannot reach >=90% if foundational architectural forks remain unsettled.
+     Confidence is scored on a 0–100% scale and must be dynamically updated as questions are answered.
+   - **The Anti-Inflation Invariant & 70% Specify Ceiling**:
+     Resolving pre-existing `[NEEDS CLARIFICATION]` markers from `__SPECKIT_COMMAND_SPECIFY__` only clears known surface unknowns. **Confidence is strictly capped at ≤ 70% if only specify markers have been answered.** The agent is STRICTLY FORBIDDEN from declaring ≥ 90% confidence until it has explored child decisions on the frontier and resolved at least one independent probe on operational, network/resilience, or data-contract failure seams unmentioned in `specify.md`.
    - **Eradication of Question Quotas**:
      Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled (no 3-question limits, no 5-question round caps, no question-quota deferrals). Questioning runs strictly sequentially, one probe at a time, until confidence reaches ~95% or the user explicitly halts (`done`, `proceed`).
    - **Autonomous Question Origination Beyond Specify**:
@@ -177,9 +188,9 @@ Execution steps:
      **Why it matters:** Surfacing latent failure seams now prevents production incidents and costly refactors.
      **My Guess:** The biggest catastrophic breakdown risk is <agent's specific hypothesized failure seam>.
      ```
-   - **The ~95% Confidence Stop Heuristic**:
+   - **The ~95% Confidence Stop Heuristic (Empty Frontier)**:
      Questioning does NOT stop based on an arbitrary counter. Questioning stops when:
-     1. (The agent passes the self-check: *"Can I accurately predict the user's reaction to the next three architectural decisions?"* (~95% confidence) AND all high-impact architectural forks have been resolved and confirmed), OR
+     1. (The **frontier is empty**: every branch of the design tree has been visited, and nothing is left silently assumed across the core architectural taxonomy, reaching ~95% confidence AND all high-impact architectural forks have been resolved and confirmed), OR
      2. The user explicitly requests early exit (`done`, `proceed`, `skip`, `stop`).
    - **Handling User Feedback & Abdication**:
      - **User Corrects a Guess**: If the user refutes or corrects the agent's guess, immediately adopt the correction, update the `HYPOTHESIS:` in the next turn without defensive rationalization, and probe any downstream implications.
