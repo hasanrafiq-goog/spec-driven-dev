@@ -57,6 +57,7 @@ docs/dev
 .github/agents/
 .github/prompts/
 .github/copilot-instructions.md
+.agents/
 .grok/
 .specify/
 specs/

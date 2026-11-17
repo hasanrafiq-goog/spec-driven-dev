@@ -8,6 +8,29 @@
 
 **Input**: User description: "$ARGUMENTS"
 
+## Clarifications
+
+<!--
+  This section records the Socratic clarification session from __SPECKIT_COMMAND_CLARIFY__.
+  Every clarification probe commits to an active stance and records resolved decisions.
+-->
+
+### Session [YYYY-MM-DD]
+
+- Q: [Clarification question]? → A: [User resolved answer or confirmed guess]
+
+### Confirmed Intent & Non-Goals
+
+<!--
+  Confirmed intent deliverable generated upon reaching ~95% confidence.
+-->
+- **Outcome**: [One-line summary of tangible delivered capability]
+- **User**: [Target user/role benefiting]
+- **Why now**: [Trigger or business driver]
+- **Success**: [Measurable checkable proof of success]
+- **Constraint**: [Binding limit or non-negotiable invariant]
+- **Out of scope**: [Explicit non-goals and excluded features]
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--

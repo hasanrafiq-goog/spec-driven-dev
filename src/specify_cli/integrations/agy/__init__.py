@@ -119,6 +119,10 @@ class AgyIntegration(SkillsIntegration):
         # For Jetski and Antigravity UI slash-command discovery:
         # Link scaffolded skills into ~/.gemini/skills/ and ~/.gemini/config/skills/
         # so that the chat UI recognizes /speckit-* slash commands immediately.
+        # Skip during tests to avoid corrupting developer's global user skills with ephemeral test paths.
+        if "PYTEST_CURRENT_TEST" in os.environ or os.environ.get("SPECKIT_TEST_ENV"):
+            return created
+
         user_skills_dir = Path.home() / ".gemini" / "skills"
         user_config_skills_dir = Path.home() / ".gemini" / "config" / "skills"
         for target_dir in (user_skills_dir, user_config_skills_dir):

@@ -72,6 +72,9 @@ Execution steps:
 
 3. Load the current spec file. Perform a structured Socratic ambiguity & coverage scan using this taxonomy. Act as an adversarial staff engineer probing architectural failure seams, edge cases, auth boundaries, race conditions, and ubiquitous domain concepts. For each category, mark status: Clear / Partial / Missing. Produce an internal coverage map used for prioritization (do not output raw map unless no questions will be asked).
 
+   > ⚠️ **AUTONOMOUS DEEP-DIVE INVARIANT (CRITICAL)**:
+   > Clarification is NOT limited to pre-existing `[NEEDS CLARIFICATION]` markers left by `__SPECKIT_COMMAND_SPECIFY__`. Even if the specification contains zero or only one `[NEEDS CLARIFICATION]` marker, `__SPECKIT_COMMAND_CLARIFY__` MUST conduct an independent, deep Socratic inquiry. It actively originates its own probing questions across the architectural taxonomy below, interrogating unstated assumptions, scale/concurrency limits, auth boundaries, failure modes, and trade-offs until genuine confidence reaches ~95%.
+
    Functional Scope & Behavior:
    - Core user goals & success criteria
    - Explicit out-of-scope declarations
@@ -138,58 +141,63 @@ Execution steps:
      - *Use when*: Empirical validation is needed (e.g., verifying an API payload, benchmark latency, or streaming capability).
      - *Protocol*: Executes in an isolated scratchpad directory (`specs/<feature>/spikes/<name>/` or temporary workspace) with **zero Git branch creation or switching**, preserving working tree safety. Findings and minimal snippets are synthesized into the spec and scratchpad files are cleaned up or preserved under `spikes/`.
 
-5. Generate (internally) a prioritized queue of candidate clarification questions. Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled. Batch in rounds of up to 5 questions per interactive round. Apply these constraints:
-    - Queue candidate questions prioritized by impact: architectural forks / data contracts > security posture > operational readiness > UX behavior.
-    - Each question must be answerable with EITHER:
-       - A short multiple‑choice selection (2–5 distinct, mutually exclusive options), OR
-       - A one-word / short‑phrase answer (explicitly constrain: "Answer in <=5 words").
-    - Only include questions whose answers materially impact architecture, data modeling, task decomposition, test design, UX behavior, operational readiness, or compliance validation.
-    - Ensure category coverage balance: attempt to cover the highest impact unresolved categories first; avoid asking two low-impact questions when a single high-impact area (e.g., security posture) is unresolved.
-    - Exclude questions already answered, trivial stylistic preferences, or plan-level execution details (unless blocking correctness).
-    - Favor clarifications that reduce downstream rework risk or prevent misaligned acceptance tests.
-    - Present questions in focused interactive batches (up to 5 per round), allowing subsequent rounds until all critical architectural forks are resolved.
+5. **Dynamic Socratic Questioning Loop & Stance**:
+   - **Hypothesis-First Read & Dynamic Confidence Scoring**:
+     Before asking any questions, the agent MUST assess its internal mental model and output its initial hypothesis and confidence:
+     ```text
+     HYPOTHESIS: <One sentence capturing the underlying user need beneath the conventional request>
+     CONFIDENCE: ~X% — missing: <exact unresolved blind spots: who it's for, binding constraint, or failure mode>
+     ```
+     Confidence is scored on a 0–100% scale and must be dynamically updated as questions are answered. Confidence cannot reach >=90% if foundational architectural forks remain unsettled.
+   - **Eradication of Question Quotas**:
+     Prioritize deep Socratic interrogation on architectural forks, data contracts, and security boundaries. Do NOT truncate or cut off questioning at an arbitrary count if high-impact architectural forks remain unsettled (no 3-question limits, no 5-question round caps, no question-quota deferrals). Questioning runs strictly sequentially, one probe at a time, until confidence reaches ~95% or the user explicitly halts (`done`, `proceed`).
+   - **Autonomous Question Origination Beyond Specify**:
+     Questions MUST NOT be confined to markers discovered in the specify phase. The agent independently audits the taxonomy, uncovers latent failure seams, and originates its own grilling probes across all Partial or Missing areas, regardless of how few markers existed in `spec.md`.
+   - **Guess-Attached Questioning Protocol**:
+     Every clarification probe presented to the user MUST take an active technical stance and strictly adhere to:
+     ```text
+     **Question:** <Full interrogative ending with a question mark>?
+     **Why it matters:** <One plain-language sentence explaining the concrete stake for acceptance or shipping>
+     **My Guess:** <The agent's specific prediction of the answer, backed by explicit technical reasoning>
+     ```
+   - **Bulleted Options for Discrete Architectural Forks (Table Ban)**:
+     When mutually exclusive architectural choices exist (e.g., Option A vs Option B), list them as concise bullet points directly under the guess:
+     ```text
+     - Option A: <Description of alternative A>
+     - Option B: <Description of alternative B>
+     ```
+     Markdown survey tables (e.g., table grids with pipes and option columns) are strictly FORBIDDEN in the interactive clarification dialogue to eliminate terminal line-wrapping corruption on narrow screens.
+   - **The "Want vs. Should Want" Anti-Rationalization Filter**:
+     Actively listen for buzzwords or textbook rationalization ("enterprise-grade", "industry standard", "clean architecture", "we should probably..."). When detected, interrupt the convention and ask:
+     > *"If you didn't have to justify this to anyone, what would you actually want to happen here?"*
+   - **Adversarial Pre-Mortem Failure Probing**:
+     Prior to concluding clarification on any non-trivial feature or breaking change, conduct an adversarial pre-mortem probe with an attached failure prediction:
+     ```text
+     **Question:** Imagine this feature ships to production and causes an outage, regression, or rewrite in 6 months. What was the hidden failure seam that caused it?
+     **Why it matters:** Surfacing latent failure seams now prevents production incidents and costly refactors.
+     **My Guess:** The biggest catastrophic breakdown risk is <agent's specific hypothesized failure seam>.
+     ```
+   - **The ~95% Confidence Stop Heuristic**:
+     Questioning does NOT stop based on an arbitrary counter. Questioning stops when:
+     1. (The agent passes the self-check: *"Can I accurately predict the user's reaction to the next three architectural decisions?"* (~95% confidence) AND all high-impact architectural forks have been resolved and confirmed), OR
+     2. The user explicitly requests early exit (`done`, `proceed`, `skip`, `stop`).
+   - **Handling User Feedback & Abdication**:
+     - **User Corrects a Guess**: If the user refutes or corrects the agent's guess, immediately adopt the correction, update the `HYPOTHESIS:` in the next turn without defensive rationalization, and probe any downstream implications.
+     - **User Abdication ("Whatever you think")**: If the user responds with "whatever you think", "you decide", or similar on a critical architectural fork, do NOT blindly proceed or accept abdication. Respectfully decline the abdication, succinctly restate the best guess along with the concrete operational, security, or architectural risks of that choice, and request an explicit decision or endorsement.
+   - **Confirmed Intent Deliverable with Explicit Out-of-Scope**:
+     When confidence reaches ~95%, present the confirmed intent deliverable:
+     ```text
+     Here is the confirmed intent:
+     - Outcome:      <one line — the actual tangible result>
+     - User:         <one line — who specifically benefits>
+     - Why now:      <one line — what triggered this change>
+     - Success:      <one line — the measurable checkable proof of success>
+     - Constraint:   <one line — the binding limit or non-negotiable invariant>
+     - Out of scope: <one line — what we are EXPLICITLY NOT doing>
 
-5. Sequential questioning loop (interactive):
-    - Present EXACTLY ONE question at a time.
-    - **Question writing quality (applies to every question, MC or short-answer):**
-       - Lead with `**Question:**` followed by a full interrogative that ends with `?`. The question text before the `?` must make sense on its own.
-       - NEVER use a topic label, section heading, or requirement id as the question itself. For example, `Acceptance device/runtime matrix (FR-023)` is INVALID — it is a label, not a question.
-       - After the `?`, the only permitted suffix is an optional parenthesized requirement/question id. Exact format: `**Question:** <interrogative>?` or `**Question:** <interrogative>? (FR-023)`. Never put the id before the `?`, and never use the id (alone or with a topic label) as the whole prompt.
-       - Immediately after the question line, add one plain-language "Why it matters" sentence (the stake for acceptance or shipping) before the recommendation/options.
-       - Use everyday wording; introduce jargon only if defined in the same sentence. Self-check: a reader who does not know Spec Kit must be able to answer from the Question line alone. Terse is fine; cryptic labels are not.
-    - For multiple‑choice questions:
-       - **Analyze all options** and determine the **most suitable option** based on:
-          - Best practices for the project type
-          - Common patterns in similar implementations
-          - Risk reduction (security, performance, maintainability)
-          - Alignment with any explicit project goals or constraints visible in the spec
-       - Present your **recommended option prominently** at the top with clear reasoning (1-2 sentences explaining why this is the best choice).
-       - Format as: `**Recommended:** Option [X] - <reasoning>`
-       - Then render all options as a Markdown table:
-
-       | Option | Description |
-       |--------|-------------|
-       | A | <Option A description> |
-       | B | <Option B description> |
-       | C | <Option C description> (add D/E as needed up to 5) |
-       | Short | Provide a different short answer (<=5 words) (Include only if free-form alternative is appropriate) |
-
-       - After the table, add: `You can reply with the option letter (e.g., "A"), accept the recommendation by saying "yes" or "recommended", or provide your own short answer.`
-    - For short‑answer style (no meaningful discrete options):
-       - Provide your **suggested answer** based on best practices and context.
-       - Format as: `**Suggested:** <your proposed answer> - <brief reasoning>`
-       - Then output: `Format: Short answer (<=5 words). You can accept the suggestion by saying "yes" or "suggested", or provide your own answer.`
-    - After the user answers:
-       - If the user replies with "yes", "recommended", or "suggested", use your previously stated recommendation/suggestion as the answer.
-       - Otherwise, validate the answer maps to one option or fits the <=5 word constraint.
-       - If ambiguous, ask for a quick disambiguation (count still belongs to same question; do not advance).
-       - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.
-    - Stop asking further questions when:
-       - All critical ambiguities and architectural forks are resolved, OR
-       - User signals completion ("done", "good", "no more", "proceed"), OR
-       - All queued questions for this round are answered and no critical architectural forks remain.
-    - Never reveal future queued questions in advance.
-    - If no valid questions exist at start, immediately report no critical ambiguities.
+     Confirm (yes / no / refine)?
+     ```
+     The agent MUST receive an affirmative confirmation before declaring clarification complete.
 
 6. Integration after EACH accepted answer (incremental update approach):
     - Maintain in-memory representation of the spec (loaded once at start) plus the raw file contents.
@@ -197,6 +205,8 @@ Execution steps:
        - Ensure a `## Clarifications` section exists (create it just after the highest-level contextual/overview section per the spec template if missing).
        - Under it, create (if not present) a `### Session YYYY-MM-DD` subheading for today.
     - Append a bullet line immediately after acceptance: `- Q: <question> → A: <final answer>`.
+    - When clarification concludes and Confirmed Intent is affirmatively confirmed by the user:
+       - Ensure a `### Confirmed Intent & Non-Goals` block is written or updated under `## Clarifications` with the final confirmed 6 lines (Outcome, User, Why now, Success, Constraint, Out of scope).
     - Then immediately apply the clarification to the most appropriate section(s):
        - Functional ambiguity → Update or add a bullet in Functional Requirements.
        - User interaction / actor distinction → Update User Stories or Actors subsection (if present) with clarified role, constraint, or scenario.
@@ -216,7 +226,7 @@ Execution steps:
    - Questions in this interactive round are validated and resolved.
    - Updated sections contain no lingering vague placeholders the new answer was meant to resolve.
    - No contradictory earlier statement remains (scan for now-invalid alternative choices removed).
-   - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`.
+   - Markdown structure valid; only allowed new headings: `## Clarifications`, `### Session YYYY-MM-DD`, `### Confirmed Intent & Non-Goals`.
    - Terminology consistency: same canonical term used across all updated sections.
 
 8. Write the updated spec back to `FEATURE_SPEC`.
@@ -244,7 +254,7 @@ Behavior rules:
 
 - If no meaningful ambiguities found (or all potential questions would be low-impact), respond: "No critical ambiguities detected worth formal clarification." and suggest proceeding.
 - If spec file missing, instruct user to run `__SPECKIT_COMMAND_SPECIFY__` first (do not create a new spec here).
-- Batch questioning in interactive rounds (up to 5 per round), continuing until all critical architectural forks are settled (clarification retries for a single question do not count as new questions).
+- Question sequentially one probe at a time without arbitrary quotas or batch caps, continuing until confidence reaches ~95% or all critical architectural forks are settled (clarification retries for a single question do not count as new questions).
 - Avoid speculative tech stack questions unless the absence blocks functional clarity.
 - Respect user early termination signals ("stop", "done", "proceed").
 - If no questions asked due to full coverage, output a compact coverage summary (all categories Clear) then suggest advancing.
@@ -323,7 +333,7 @@ Report completion (after questioning loop ends or early termination):
 - Path to updated spec.
 - Sections touched (list names).
 - Spec quality checklist status (if `FEATURE_DIR/checklists/requirements.md` was re-validated): show before/after pass counts (e.g., "Spec Quality Checklist: 12/16 → 15/16 items passing") and list any items that changed state — both newly checked (unchecked → checked) and any regressions (checked → unchecked). If any items remain unchecked, list them as areas needing attention.
-- Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (exceeds question quota, or remaining item is specifically implementation method, tech-stack comparison, or task breakdown), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
+- Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (remaining item is specifically implementation method, tech-stack comparison, or task breakdown per issue #1717; never defer acceptance criteria or edge cases due to question count), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
 - If any Outstanding or Deferred remain, recommend whether to proceed to `__SPECKIT_COMMAND_PLAN__` or run `__SPECKIT_COMMAND_CLARIFY__` again later post-plan.
 - Suggested next command.
 

@@ -11,6 +11,8 @@ PLAN_CMD = TEMPLATES_DIR / "commands" / "plan.md"
 IMPLEMENT_CMD = TEMPLATES_DIR / "commands" / "implement.md"
 TASKS_CMD = TEMPLATES_DIR / "commands" / "tasks.md"
 CONVERGE_CMD = TEMPLATES_DIR / "commands" / "converge.md"
+DEBUG_CMD = TEMPLATES_DIR / "commands" / "debug.md"
+SPEC_TEMPLATE = TEMPLATES_DIR / "spec-template.md"
 TASKS_TEMPLATE = TEMPLATES_DIR / "tasks-template.md"
 
 
@@ -151,4 +153,38 @@ def test_central_sdlc_board_synchronization() -> None:
     assert "Done & Converged" in converge_text
 
 
+def test_spec_template_confirmed_intent_and_non_goals() -> None:
+    text = SPEC_TEMPLATE.read_text(encoding="utf-8")
+    assert "### Confirmed Intent & Non-Goals" in text
+    assert "- **Outcome**:" in text
+    assert "- **User**:" in text
+    assert "- **Why now**:" in text
+    assert "- **Success**:" in text
+    assert "- **Constraint**:" in text
+    assert "- **Out of scope**:" in text
+
+
+def test_debug_diagnostic_hypotheses_scoring() -> None:
+    text = DEBUG_CMD.read_text(encoding="utf-8")
+    assert "initial confidence score (0–100%)" in text
+    assert "Initial Confidence" in text
+    assert "without premature guesswork" in text
+
+
+def test_clarify_guess_attached_and_quota_free_hardening() -> None:
+    text = CLARIFY_CMD.read_text(encoding="utf-8")
+    # Positive assertions
+    assert "**Question:**" in text
+    assert "**Why it matters:**" in text
+    assert "**My Guess:**" in text
+    assert "HYPOTHESIS:" in text
+    assert "CONFIDENCE:" in text
+    assert "Here is the confirmed intent:" in text
+    assert "- Out of scope:" in text
+
+    # Negative assertions: zero quotas or caps
+    assert "Batch in rounds of up to 5 questions" not in text
+    assert "exceeds question quota" not in text
+    assert "up to 5 per round" not in text
+    assert "up to 5 questions" not in text
 
