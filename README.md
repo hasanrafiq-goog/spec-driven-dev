@@ -68,8 +68,9 @@ Spec-Driven-DevKit maintains a continuously synchronized, category-based archite
   - `api-surface.md`: Exhaustive catalog of exposed HTTP/RPC endpoints, CLI commands, and entrypoint handlers.
   - `domain-models.md`: Complete dictionary of database schemas, ORM models, Pydantic models, Zod schemas, and types.
   - `traceability.md`: Functional requirements (`FR-###`, `REQ-###`, `US-###`) and JIRA work tickets mapped to code.
-  - `dependencies.md`: Inter-module dependency coupling, hotspots, and blast-radius risk ratings for refactoring.
+  - `dependencies.md`: Inter-module dependency coupling, hotspots, blast-radius risk ratings, and Ousterhout **Deletion Test / Two-Adapter Rule** diagnostics.
   - `test-map.md`: Test suite architecture mapping source components to test coverage.
+- **Offline Visual HTML Dashboard**: Run `specify architecture generate --visual` (invoked automatically by `/speckit-plan` and `/speckit-converge`) to emit a zero-CDN, air-gap resilient interactive SVG report at `.specify/reports/architecture.html` (plus `--strict` for CI depth gating).
 - **Sub-Second Delta Refreshes**: Employs SHA-256 file-hash caching (`.specify/cache/architecture_cache.json`) to re-parse only changed files, keeping memory up to date in milliseconds (~100 ms).
 - **Background SDD Integration**: `/speckit-plan` consults existing architecture models to avoid schema duplication, `/speckit-implement` delta-refreshes memory upon task completion, and `/speckit-converge` uses traceability to verify all requirements are implemented.
 
@@ -81,26 +82,27 @@ Spec-Driven-DevKit maintains a continuously synchronized, category-based archite
 
 ### 6. 🔬 Socratic Rigor, Mutation Safety & Session Continuity
 
-- **Socratic Architectural Gating**: Eliminates premature guesswork by interrogating domain boundaries, data store contracts, and auth models before planning. Major decisions are automatically recorded as Architectural Decision Records (`docs/adr/ADR-####.md`) and ubiquitous domain terms in `.specify/memory/GLOSSARY.md`.
+- **Socratic Architectural Gating**: Eliminates premature guesswork by interrogating domain boundaries, data store contracts, and auth models before planning. Major decisions are recorded as ADRs (`docs/adr/ADR-####.md` gated by the **3-Condition ADR Trigger**) and ubiquitous domain terms in `.specify/memory/GLOSSARY.md` (with `_Avoid_` negative synonym tags and monorepo `GLOSSARY-MAP.md`).
 - **Hard Spec Gating**: `/speckit-plan` strictly refuses to generate technical plans if unresolved ambiguities or clarification markers remain in `spec.md`.
-- **Vertical Tracer-Bullet DAGs**: Slices features into thin, end-to-end testable slices ($\le$ 3 files per task) tagged with explicit `(blocked_by: [T###])` dependencies for parallel multi-worktree execution.
+- **Vertical Tracer-Bullet DAGs & Anti-Mocking Dogma**: Slices features into thin, end-to-end testable slices (Task 1 delivers a working walking skeleton) with strict boundary-only mocking (zero internal collaborator mocks) and the **Test Change Rule**.
 - **Pre-Mutation State Safety Gates**: Enforces strict confirmation checks before destructive operations (file deletions, schema migrations, public API contract breaks).
 - **Strict Red-Green-Refactor Rhythm**: Verifies that tests actually fail before implementation code is written, eliminating false-positive test suites.
 - **Durable Session Checkpointing**: Automatically tracks in-progress features, active phases, and completed task IDs in `.specify/session-checkpoint.json` across IDE/window restarts.
-- **Dual-Lens Convergence**: Evaluates code through both Functional Traceability (Requirements $\leftrightarrow$ Tests) and Code Quality (constitution compliance and anti-pattern detection).
+- **Dual-Lens Merge-Base Convergence & Auto-Learnings**: Evaluates diffs strictly against `git merge-base origin/main HEAD` (never blocking on pre-existing legacy debt), and runs an automated post-convergence retrospective appending verified friction rules to `.specify/memory/learnings.md`.
 
 ### 7. 🎯 Advanced Engineering Workflows
 
-- **Zero-Command Fog-of-War Ambiguity Engine**: Tracks fuzzy requirements, unknown trade-offs, and architectural spikes directly on `.specify/BOARD.md` (`## 🌫️ Fog of War`). Resolves them natively inside `/speckit-clarify` via 3 dedicated modes:
+- **Zero-Command Fog-of-War Ambiguity Engine**: Tracks fuzzy requirements, unknown trade-offs, and architectural spikes directly on `.specify/BOARD.md` (`## 🌫️ Fog of War`). Resolves them natively inside `/speckit-clarify` via 4 dedicated modes:
   1. *Socratic Grilling* (interactive deep dialogue with the user)
   2. *AFK Research Subagent* (autonomous multi-source codebase/web investigation with ADR synthesis)
-  3. *Zero-Branch Scratchpad Spike* (isolated empirical exploration without Git pollution)
+  3. *Throwaway Browser / Scratchpad Prototype Spike* (zero-dependency HTML/JS UX prototypes in `.specify/prototypes/` or isolated spikes with zero Git pollution)
+  4. *Async Questionnaire Escape Hatch* (`--async` / `pass` offloads unresolved stakeholder forks to `QUESTIONNAIRE.md` + `@human` board card)
   Items automatically promote from `UNCERTAIN` to `READY FOR PLAN` once clarified.
-- **Divergent Interface Exploration ("Design It Twice")**: Grounded in Ousterhout's *A Philosophy of Software Design*, `/speckit-plan` evaluates 3 competing interface designs (*Minimal*, *Flexible*, *Default-Simple*) with depth scoring and mandatory ADR synthesis before freezing public contracts.
+- **Divergent Interface Exploration ("Design It Twice")**: Grounded in Ousterhout's *A Philosophy of Software Design*, `/speckit-plan` smart-triggers 3 competing interface designs (*Minimal Interface*, *Maximum Flexibility*, *Default-Case Simplicity*) using context-insulated subagents (with sequential single-turn fallback) and blind trade-off evaluation before freezing public contracts.
 - **High-Seam Behavioral Testing**: Acceptance scenarios and user stories specify public module seams without brittle coupling to volatile internal file paths.
 - **3-Phase Expand–Contract Refactoring**: Wide interface refactors in `/speckit-tasks` and `/speckit-implement` are strictly sequenced into *Phase A (Expand: add new interface)* $\rightarrow$ *Phase B (Migrate: incremental caller migration $\le$ 3 files per task)* $\rightarrow$ *Phase C (Contract: deprecate and remove legacy shims)*, keeping CI green at every step.
 - **Root-Cause Diagnostic & Bug Evolution (`/speckit-debug`)**: Replaces speculative "shotgun debugging" with a 4-phase loop (*Understand* $\rightarrow$ *Hypothesize* $\rightarrow$ *Isolate* $\rightarrow$ *Output*) and an anti-shotgun rule requiring a reproducible test before editing code. Specification gaps automatically take **Ramp B** to seed a new living spec (`specs/FIX-###/spec.md`) with failing assertions as Acceptance Criteria; shallow typos take **Ramp A** for atomic Red-Green-Refactor ($\le$ 3 files).
-- **Local-First Issue Tracker Synchronization**: Defaults to 100% offline (`tracker: local`) with zero external network requests. Transparently syncs child tasks and status transitions to GitHub Issues, Linear, or Jira behind existing commands using non-invasive idempotent HTML comments (`<!-- tracker:<type>#<id> -->`). Fallback handling gracefully protects offline development and non-interactive CI builds.
+- **Jira-Grade Local Board & Idempotent `specify board sync`**: `.specify/BOARD.md` acts as the local-canonical multi-feature ledger with a strict **No-Overwrite / No-Truncation Invariant** across all historical features. Teams can select `local`, `github`, or `jira` during `specify init --board` (or on first-run `/speckit-specify`); `specify board sync` mirrors state idempotently via `External-Ref` and buffers offline updates in `.specify/board-sync-queue.json`.
 
 ---
 

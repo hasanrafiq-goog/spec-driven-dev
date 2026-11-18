@@ -116,6 +116,17 @@ class ArchitectureCache(BaseModel):
     settings: dict[str, Any] = Field(default_factory=dict)
 
 
+class ArchitectureDiagnostic(BaseModel):
+    """Advisory or strict architectural depth/abstraction finding."""
+
+    code: str  # "SHALLOW_PASS_THROUGH" | "PREMATURE_ABSTRACTION"
+    file_path: str
+    symbol_name: str
+    line: int
+    message: str
+    suppressed: bool = False
+
+
 class ArchitectureSummary(BaseModel):
     total_files: int
     total_symbols: int
@@ -127,3 +138,5 @@ class ArchitectureSummary(BaseModel):
     generated_categories: list[str]
     delta_files_reparsed: int
     duration_ms: float
+    diagnostics: list[ArchitectureDiagnostic] = Field(default_factory=list)
+    visual_report_path: str | None = None

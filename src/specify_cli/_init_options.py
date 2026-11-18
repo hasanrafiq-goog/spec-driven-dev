@@ -8,6 +8,12 @@ from typing import Any, Union
 
 INIT_OPTIONS_FILE = ".specify/init-options.json"
 
+BOARD_PROVIDER_CHOICES: dict[str, str] = {
+    "local": "Local Markdown Kanban (.specify/BOARD.md) [Default: 100% Offline & Git-tracked]",
+    "github": "GitHub Projects & Issues (Write-through mirror with offline outbox)",
+    "jira": "Atlassian Jira (Write-through mirror with offline outbox)",
+}
+
 
 class _MissingInitOptionsFile:
     """Sentinel: init-options.json does not exist at all (legacy layout)."""
@@ -41,6 +47,14 @@ def load_init_options(project_path: Path) -> dict[str, Any]:
 def is_ai_skills_enabled(opts: Mapping[str, Any] | None) -> bool:
     """Return True only when init options explicitly enable AI skills."""
     return isinstance(opts, Mapping) and opts.get("ai_skills") is True
+
+
+def resolve_board_provider(project_path: Path) -> str:
+    """Return the configured board provider ('local', 'github', or 'jira')."""
+    provider = load_init_options(project_path).get("board_provider")
+    if isinstance(provider, str) and provider in BOARD_PROVIDER_CHOICES:
+        return provider
+    return "local"
 
 
 def resolve_active_agent_for_registration(

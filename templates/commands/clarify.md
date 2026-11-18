@@ -138,8 +138,11 @@ Execution steps:
      - *Use when*: External libraries, third-party APIs, legacy subsystems, or unfamiliar technologies require deep investigation.
      - *Protocol*: Dispatches background exploration task, analyzes documentation, and synthesizes findings into an Architectural Decision Record (`docs/adr/ADR-####-<topic>.md`).
    - **Mode C: Prototype Spike (Zero-Branch Scratchpad)**:
-     - *Use when*: Empirical validation is needed (e.g., verifying an API payload, benchmark latency, or streaming capability).
-     - *Protocol*: Executes in an isolated scratchpad directory (`specs/<feature>/spikes/<name>/` or temporary workspace) with **zero Git branch creation or switching**, preserving working tree safety. Findings and minimal snippets are synthesized into the spec and scratchpad files are cleaned up or preserved under `spikes/`.
+     - *Use when*: Empirical validation is needed (e.g., verifying an API payload, benchmark latency, or interactive UI/dashboard UX).
+     - *Protocol*: For UI/dashboard features, generate a zero-dependency throwaway HTML/JS prototype at `.specify/prototypes/<feature>/index.html` (git-ignored), ask the user to open and review it in their browser, and persist the validated UX/data contract in `spec.md` under `### Visual & Interaction Prototype Sign-off`. For API/CLI spikes, use `specs/<feature>/spikes/<name>/` with zero Git branch creation.
+   - **Mode D: Async Questionnaire Escape Hatch (`--async` or `pass`)**:
+     - *Use when*: Stakeholders or domain experts must answer unresolved business trade-offs offline.
+     - *Protocol*: Generate `specs/<feature>/QUESTIONNAIRE.md` with open forks, trade-offs, and guesses; log a `[BLOCKED: Awaiting Questionnaire]` card under `## 🛑 Blocked & Awaiting Human Input (@human)` in `.specify/BOARD.md` (preserving all existing cards and running `specify board sync` if configured); pause cleanly without failing.
 
 5. **Dynamic Socratic Questioning Loop & Stance**:
    - **The Design Tree & Frontier Mental Model**:
@@ -226,7 +229,7 @@ Execution steps:
        - Edge case / negative flow → Add a new bullet under Edge Cases / Error Handling (or create such subsection if template provides placeholder for it).
        - Terminology conflict → Normalize term across spec; retain original only if necessary by adding `(formerly referred to as "X")` once.
     - If the clarification invalidates an earlier ambiguous statement, replace that statement instead of duplicating; leave no obsolete contradictory text.
-    - **Ubiquitous Language & Glossary**: If a domain term or actor definition is clarified or standardized, record or append it to `.specify/memory/GLOSSARY.md` (create file if missing) mapping term to its definition.
+    - **Ubiquitous Language & Glossary**: If a domain term or actor definition is clarified or standardized, record or append it to `.specify/memory/GLOSSARY.md` (create file if missing) mapping term to its definition and explicit `_Avoid_` prohibited synonyms (plus `.specify/memory/GLOSSARY-MAP.md` for monorepos).
     - **Architectural Decision Record (ADR)**: If the clarification resolves a major architectural fork or permanent design tradeoff, write a concise ADR in `docs/adr/ADR-####-<topic>.md` (create directory if missing) documenting Status, Context, Decision, and Consequences, and cross-reference the ADR in `spec.md`.
     - Save the spec file AFTER each integration to minimize risk of context loss (atomic overwrite).
     - Preserve formatting: do not reorder unrelated sections; keep heading hierarchy intact.

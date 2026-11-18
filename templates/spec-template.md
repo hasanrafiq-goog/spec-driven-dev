@@ -128,8 +128,14 @@
 
 ### Key Entities *(include if feature involves data)*
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **[Entity 1]**: [What it represents, key attributes without implementation] | `_Avoid_`: [Prohibited colloquial synonyms]
+- **[Entity 2]**: [What it represents, relationships to other entities] | `_Avoid_`: [Prohibited colloquial synonyms]
+
+### Visual & Interaction Prototype Sign-off *(include if UI/dashboard prototype was reviewed)*
+
+- **Prototype Artifact**: `.specify/prototypes/[###-feature-name]/index.html` *(git-ignored ephemeral scratchpad)*
+- **Validated UX Mechanics**: [Confirmed clickflow, filters, and interaction states]
+- **Validated Data Contract**: [Confirmed JSON/data payload expectations]
 
 ## Success Criteria *(mandatory)*
 

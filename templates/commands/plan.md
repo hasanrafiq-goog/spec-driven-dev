@@ -90,8 +90,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **If all clarifications are resolved**: Proceed to Step 3.
 
 3. **Load context**:
-   - Read FEATURE_SPEC and `/memory/constitution.md`.
-   - Check `.specify/memory/architecture/`. If missing or stale, run `specify architecture generate` in the background.
+   - Read FEATURE_SPEC, `/memory/constitution.md`, and `.specify/memory/learnings.md` (if present).
+   - Run `specify architecture generate --visual` in the background if `.specify/memory/architecture/` is missing, stale, or needs visual/depth refresh; surface `.specify/reports/architecture.html` and any `[SHALLOW_PASS_THROUGH]` / `[PREMATURE_ABSTRACTION]` warnings directly to the user.
    - Consult relevant category files in `.specify/memory/architecture/`:
      - `overview.md` for system topology and tech stack conventions.
      - `domain-models.md` for existing entities and schemas to avoid duplication.
@@ -178,13 +178,14 @@ Command ends after Phase 1 design. Report branch, IMPL_PLAN path, and generated 
    - Validation rules from requirements
    - State transitions if applicable
 
-2. **Divergent Interface Exploration ("Design It Twice")**:
+2. **Divergent Interface Exploration ("Design It Twice") & 3-Condition ADR Gate**:
    - Grounded in John Ousterhout's *A Philosophy of Software Design* (modules should be deep: hiding large complexity behind simple, small interfaces).
-   - Whenever introducing or changing public interfaces, CLI commands, or module seams, evaluate at least 3 competing design alternatives:
-     1. **Minimal Interface**: Fewest entry points (1–3), maximum information hiding, deep module seam.
-     2. **Maximum Flexibility**: Pluggable strategies, configurable adapters, extensible lifecycle hooks.
-     3. **Default-Case Simplicity**: Zero-configuration ergonomics, sensible defaults, intuitive developer experience.
-   - Score module depth at the seam and synthesize the selected trade-offs into an Architectural Decision Record (`docs/adr/ADR-####-<feature>-interface-design.md`).
+   - **Smart Trigger**: Automatically run whenever the spec introduces or modifies public contracts, CLI commands, or $\ge 2$ subsystems (plus `--divergent` override). Spawn 3 context-insulated subagents when supported by the host harness, or run 3 sequential persona-isolated passes on single-agent harnesses:
+     1. **Alpha — Minimal Interface**: Fewest entry points (1–3), lowest LOC, zero new deps, deep module seam.
+     2. **Beta — Maximum Flexibility**: Pluggable strategies, configurable adapters, clean domain boundaries, strong DX.
+     3. **Gamma — Default-Case Simplicity**: Zero-configuration ergonomics, offline/air-gap safe, intuitive defaults.
+   - Perform a blind trade-off evaluation in `plan.md` under `## Architecture Alternatives & Design It Twice Analysis`.
+   - **3-Condition ADR Gate**: Write `docs/adr/ADR-####-<feature>-interface-design.md` *only* if all 3 hold: (1) viable competing alternatives exist, (2) choice is irreversible/high-cost, and (3) trade-offs are divided; otherwise document rationale inline in `plan.md`.
 
 3. **Define interface contracts** (if project has external interfaces) → `/contracts/`:
    - Identify what interfaces the project exposes to users or other systems (incorporating the synthesized "Design It Twice" decisions)

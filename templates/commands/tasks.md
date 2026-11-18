@@ -84,9 +84,9 @@ You **MUST** consider the user input before proceeding (if not empty).
 4. **Generate tasks.md**: Use TASKS_TEMPLATE_CONTENT (from the JSON output above) as the structure. For compatibility with older setup scripts that omit TASKS_TEMPLATE_CONTENT, read TASKS_TEMPLATE instead. Fill with:
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
-   - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
+   - Phase 2: Foundational & **Vertical Tracer Bullet** (Task 1/MVP MUST deliver a minimal working end-to-end walking skeleton with a passing integration test before horizontal breadth)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, mandatory failing test tasks (TDD), implementation tasks
+   - Each phase includes: story goal, independent test criteria, mandatory failing test tasks (TDD with **Anti-Mocking Dogma**: never mock internal collaborators; mocks permitted ONLY at external I/O boundaries), implementation tasks
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
@@ -95,10 +95,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Implementation strategy section (MVP first, incremental delivery)
 
 5. **Central SDLC Board Synchronization**:
-   - If `.specify/BOARD.md` exists:
+   - If `.specify/BOARD.md` exists (preserving all existing/past feature cards — **No-Overwrite / No-Truncation Invariant**):
      - Under `## 🟡 Ready for Work`, list the generated tasks:
        - Record each task with its ID, title, status (`READY` for root/unblocked tasks, `BLOCKED` for dependent tasks), assignee (`@agent-implement`), tagged target file paths, and `Blocked By` dependencies (derived from the DAG).
        - Ensure the parent feature ticket is marked `Stage: Implement`, `Status: READY`.
+     - Run `specify board sync` if `.specify/init-options.json` configures a remote `board_provider`.
 
 6. **Local-First Issue Tracker Synchronization (Optional Background Hook)**:
    - **Local Default**: Issue tracking defaults to `tracker: local` (100% offline, zero network requests, zero required API keys).

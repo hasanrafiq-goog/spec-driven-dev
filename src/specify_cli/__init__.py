@@ -432,6 +432,11 @@ from .architecture._commands import register as _register_architecture_cmds  # n
 _register_architecture_cmds(app)
 
 
+# ===== Board Commands =====
+from .board._commands import register as _register_board_cmds  # noqa: E402
+_register_board_cmds(app)
+
+
 # ===== Session Commands =====
 from .session._commands import register as _register_session_cmds  # noqa: E402
 _register_session_cmds(app)

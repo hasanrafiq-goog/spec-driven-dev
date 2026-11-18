@@ -51,6 +51,20 @@ def generate(
             help="Bypass cache and force a complete re-parse of all files.",
         ),
     ] = False,
+    visual: Annotated[
+        bool,
+        typer.Option(
+            "--visual",
+            help="Generate a 100% offline visual HTML architecture dashboard at .specify/reports/architecture.html.",
+        ),
+    ] = False,
+    strict: Annotated[
+        bool,
+        typer.Option(
+            "--strict",
+            help="Exit non-zero if unsuppressed Deletion Test or Two-Adapter Rule diagnostics are found.",
+        ),
+    ] = False,
     json_output: Annotated[
         bool,
         typer.Option(
@@ -69,6 +83,8 @@ def generate(
         docs_dirs=docs_dirs_list,
         ticket_paths=ticket_paths_list,
         force=force,
+        visual=visual,
+        strict=strict,
     )
 
     result = run_architecture_generate(request)
@@ -95,6 +111,8 @@ def generate(
             "generated_categories": s.generated_categories,
             "delta_files_reparsed": s.delta_files_reparsed,
             "duration_ms": s.duration_ms,
+            "diagnostics_count": len([d for d in s.diagnostics if not d.suppressed]),
+            "visual_report_path": s.visual_report_path,
         })
         return
 
@@ -110,6 +128,10 @@ def generate(
     table.add_row("Functional Requirements", str(s.total_requirements))
     table.add_row("Work Items / Tickets", str(s.total_tickets))
     table.add_row("Languages", ", ".join(f"{k} ({v})" for k, v in s.languages.items()) or "None")
+    active_diags = [d for d in s.diagnostics if not d.suppressed]
+    table.add_row("Depth Diagnostics", str(len(active_diags)))
+    if s.visual_report_path:
+        table.add_row("Visual Dashboard", s.visual_report_path)
     table.add_row("Duration", f"{s.duration_ms:.2f} ms")
 
     console.print(table)

@@ -18,6 +18,8 @@ class ArchitectureGenerateRequest:
     docs_dirs: list[str] = field(default_factory=list)
     ticket_paths: list[str] = field(default_factory=list)
     force: bool = False
+    visual: bool = False
+    strict: bool = False
 
 
 @dataclass(frozen=True)
@@ -57,7 +59,18 @@ def run_architecture_generate(
             docs_dirs=request.docs_dirs,
             ticket_paths=request.ticket_paths,
             force=request.force,
+            visual=request.visual,
         )
+        active_diags = [d for d in summary.diagnostics if not d.suppressed]
+        if request.strict and active_diags:
+            return ArchitectureGenerateResult(
+                summary=summary,
+                success=False,
+                error_message=(
+                    f"Strict depth gate failed with {len(active_diags)} diagnostic(s). "
+                    "Inline shallow wrappers, add a second concrete adapter, or suppress intentionally."
+                ),
+            )
         return ArchitectureGenerateResult(summary=summary, success=True)
     except Exception as exc:
         return ArchitectureGenerateResult(
