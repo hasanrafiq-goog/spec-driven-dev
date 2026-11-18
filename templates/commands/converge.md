@@ -256,7 +256,9 @@ Append to the **end** of `tasks.md`, per the append contract:
   run will find fewer or no remaining items.
 - On `converged`: recommend proceeding to review / opening a PR. No further implement pass
   is needed for this feature's specified scope.
-  - **Continuous Learning Retro (Optional)**: If any non-trivial test failures, debugging loops, or corrections occurred during implementation, suggest a concise 1-sentence principle to append to `/memory/constitution.md` to prevent recurring friction on future features.
+  - **Dual-Lens Merge-Base Review**: Audit diffs strictly against `git merge-base origin/main HEAD` (Lens 1) and check repository-wide contract ripples (Lens 2). Never block PR convergence on pre-existing legacy debt outside the diff (log as non-blocking backlog items instead).
+  - **Architecture & Prototype Cleanup**: Run `specify architecture generate --visual` to refresh `.specify/reports/architecture.html` and surface depth diagnostics; remove ephemeral `.specify/prototypes/<feature>/` scratchpads if present.
+  - **Continuous Learning Retro (Automated)**: Append one concise, verified friction rule (with date and feature ID) to `.specify/memory/learnings.md` (keeping `constitution.md` protected behind explicit human ratification).
 
 ### Central SDLC Board Synchronization
 
@@ -265,8 +267,8 @@ You **MUST** synchronize convergence state with the central board `.specify/BOAR
   - **On `tasks_appended`**:
     - Add each newly appended convergence task under `## 🟡 Ready for Work` with `Assignee: @agent-implement`, `Status: READY`, tagged with the specific requirement and source file.
   - **On `converged`**:
-    - Move the feature card and all associated tasks to `## ✅ Done & Converged`.
-    - If an external issue tracker is enabled (`tracker: github` / `linear` / `jira`), transition the parent feature epic / issue to closed/completed in the remote tracker. In `tracker: local` mode, no external network requests are made.
+    - Roll up completed feature tasks under `## ✅ Done & Converged (Historical Ledger)` while **strictly preserving all past completed features** (**No-Overwrite / No-Truncation Invariant**).
+    - Run `specify board sync` if `.specify/init-options.json` configures a remote `board_provider` (`github` or `jira`) so the remote tracker mirrors closure idempotently via `External-Ref`. In `local` mode, zero external network requests are made.
 
 ### 9. Check for extension hooks
 

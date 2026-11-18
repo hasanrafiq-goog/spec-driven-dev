@@ -11,6 +11,10 @@ description: "Task list template for feature implementation"
 
 **Tests**: The examples below include test tasks. Tests are MANDATORY (Red-Green-Refactor) for every user story.
 
+- **Anti-Mocking Dogma**: NEVER mock internal classes, domain functions, or local query helpers in unit tests. Mocks/fakes are permitted ONLY at external I/O boundaries (third-party HTTP/RPC APIs, wall clock, randomness, hardware).
+- **Test Change Rule**: Internal refactoring that preserves public observable behavior MUST NOT break unit tests.
+- **Vertical Tracer Bullets**: Task Phase 1/MVP MUST deliver a working end-to-end walking skeleton (entrypoint -> domain -> persistence) with a passing integration test before adding horizontal breadth.
+
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description (blocked_by: [IDs])`

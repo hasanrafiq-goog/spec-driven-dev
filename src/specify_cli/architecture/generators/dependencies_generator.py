@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..models import FileNode
+from ..models import ArchitectureDiagnostic, FileNode
 
 
 class DependenciesGenerator:
@@ -12,6 +12,7 @@ class DependenciesGenerator:
         self,
         files: dict[str, FileNode],
         file_deps: dict[str, list[str]],
+        diagnostics: list[ArchitectureDiagnostic] | None = None,
     ) -> str:
         # Compute reverse dependencies (in-degree: who imports this file)
         dependents: dict[str, list[str]] = {}
@@ -80,5 +81,17 @@ class DependenciesGenerator:
                 if len(r["callers"]) > 10:
                     lines.append(f"  - *(+{len(r['callers']) - 10} more callers)*")
                 lines.append("")
+
+        active_diags = [d for d in (diagnostics or []) if not d.suppressed]
+        lines.extend([
+            "",
+            "## 3. Depth & Abstraction Diagnostics (Deletion Test & Two-Adapter Rule)",
+            "",
+        ])
+        if not active_diags:
+            lines.append("*No active shallow pass-through or premature abstraction warnings detected.*")
+        else:
+            for d in active_diags[:40]:
+                lines.append(f"- **[{d.code}]** `{d.file_path}:{d.line}` (`{d.symbol_name}`): {d.message}")
 
         return "\n".join(lines)

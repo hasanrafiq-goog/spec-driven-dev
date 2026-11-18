@@ -40,7 +40,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+[Gates determined based on constitution file and `.specify/memory/learnings.md` if present]
+
+- **Depth & Anti-Mocking Gates**: Pass Deletion Test (no shallow 1-to-1 pass-through wrappers), Two-Adapter Rule (no single-implementation ABCs), and Boundary-Only Mocking (zero internal collaborator mocks).
+
+## Architecture Alternatives & Design It Twice Analysis
+
+> **Trigger**: Required when modifying public contracts, CLI commands, or $\ge 2$ subsystems (or `--divergent`).
+
+| Variant | Core Trade-Off | Module Depth & Seam Impact | Blind Evaluation Outcome |
+| --- | --- | --- | --- |
+| **Alpha (Minimalist)** | Lowest LOC, zero new deps | [Assessment] | [Selected / Rejected + why] |
+| **Beta (Ergonomic)** | Strongest DX & extensibility | [Assessment] | [Selected / Rejected + why] |
+| **Gamma (Resilient)** | Offline/air-gap & fault tolerance | [Assessment] | [Selected / Rejected + why] |
+
+- **3-Condition ADR Gate**: Write a formal ADR in `docs/adr/` *only* if all 3 hold: (1) viable competing alternatives exist, (2) choice is irreversible/high-cost, and (3) trade-offs are divided. Otherwise record a rationale bullet above.
 
 ## Project Structure
 

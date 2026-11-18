@@ -10,10 +10,12 @@ from typing import Sequence
 
 from .cache import CacheManager
 from .correlator import TraceabilityCorrelator
+from .depth_analyzer import analyze_python_depth
 from .generators import (
     ApiSurfaceGenerator,
     DependenciesGenerator,
     DomainModelsGenerator,
+    HtmlReportGenerator,
     OverviewGenerator,
     TestMapGenerator,
     TraceabilityGenerator,
@@ -65,6 +67,7 @@ class ArchitectureEngine:
         docs_dirs: Sequence[str] | None = None,
         ticket_paths: Sequence[str] | None = None,
         force: bool = False,
+        visual: bool = False,
     ) -> ArchitectureSummary:
         start_time = time.perf_counter()
 
@@ -160,6 +163,11 @@ class ArchitectureEngine:
         memory_dir = self.project_root / ".specify/memory/architecture"
         memory_dir.mkdir(parents=True, exist_ok=True)
 
+        python_rel_paths = [
+            rel for rel, fnode in cache.files.items() if fnode.language == "python"
+        ]
+        diagnostics = analyze_python_depth(self.project_root, python_rel_paths)
+
         overview_md = OverviewGenerator().generate(
             cache.files, file_deps, cache.requirements, cache.tickets
         )
@@ -168,7 +176,9 @@ class ArchitectureEngine:
         traceability_md = TraceabilityGenerator().generate(
             cache.requirements, cache.tickets, traceability_links
         )
-        dependencies_md = DependenciesGenerator().generate(cache.files, file_deps)
+        dependencies_md = DependenciesGenerator().generate(
+            cache.files, file_deps, diagnostics=diagnostics
+        )
         test_map_md = TestMapGenerator().generate(cache.files)
 
         (memory_dir / "overview.md").write_text(overview_md, encoding="utf-8")
@@ -177,6 +187,17 @@ class ArchitectureEngine:
         (memory_dir / "traceability.md").write_text(traceability_md, encoding="utf-8")
         (memory_dir / "dependencies.md").write_text(dependencies_md, encoding="utf-8")
         (memory_dir / "test-map.md").write_text(test_map_md, encoding="utf-8")
+
+        visual_report_path: str | None = None
+        if visual:
+            reports_dir = self.project_root / ".specify/reports"
+            reports_dir.mkdir(parents=True, exist_ok=True)
+            report_file = reports_dir / "architecture.html"
+            html_content = HtmlReportGenerator().generate(
+                cache.files, file_deps, diagnostics
+            )
+            report_file.write_text(html_content, encoding="utf-8")
+            visual_report_path = ".specify/reports/architecture.html"
 
         # Also write root .specify/memory/architecture.md as a pointer / executive overview
         root_arch_md = self.project_root / ".specify/memory/architecture.md"
@@ -216,6 +237,8 @@ class ArchitectureEngine:
             ],
             delta_files_reparsed=len(reparse_set),
             duration_ms=round(duration_ms, 2),
+            diagnostics=diagnostics,
+            visual_report_path=visual_report_path,
         )
 
     def _discover_files(

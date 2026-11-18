@@ -7,6 +7,7 @@ from .api_generator import ApiSurfaceGenerator
 from .models_generator import DomainModelsGenerator
 from .traceability_generator import TraceabilityGenerator
 from .dependencies_generator import DependenciesGenerator
+from .html_report import HtmlReportGenerator
 from .test_map_generator import TestMapGenerator
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "DomainModelsGenerator",
     "TraceabilityGenerator",
     "DependenciesGenerator",
+    "HtmlReportGenerator",
     "TestMapGenerator",
 ]

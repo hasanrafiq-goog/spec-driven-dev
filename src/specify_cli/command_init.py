@@ -26,6 +26,7 @@ from ._assets import (
     get_speckit_version,
 )
 from ._console import StepTracker, console, select_with_arrows, show_banner
+from ._init_options import BOARD_PROVIDER_CHOICES
 from ._utils import check_tool
 
 
@@ -356,6 +357,11 @@ def register(app: typer.Typer) -> None:
             False, "--trust-integration",
             help="Authorize executing a reviewed external integration package without prompting.",
         ),
+        board: str = typer.Option(
+            None,
+            "--board",
+            help="SDLC tracking board backend to use: local, github, or jira.",
+        ),
     ):
         """
         Initialize a new Specify project.
@@ -653,6 +659,26 @@ def register(app: typer.Typer) -> None:
         console.print(f"[cyan]Selected coding agent integration:[/cyan] {selected_ai}")
         console.print(f"[cyan]Selected script type:[/cyan] {selected_script}")
 
+        if isinstance(board, str):
+            normalized_board = board.strip().lower()
+            if normalized_board not in BOARD_PROVIDER_CHOICES:
+                console.print(
+                    f"[red]Error:[/red] Invalid board backend '{_escape_markup(str(board))}'. Choose from: {', '.join(BOARD_PROVIDER_CHOICES.keys())}"
+                )
+                raise typer.Exit(1)
+            selected_board = normalized_board
+        elif _prompts_allowed(non_interactive) and (integration is None or script_type is None):
+            selected_board = select_with_arrows(
+                BOARD_PROVIDER_CHOICES,
+                "Select SDLC project tracking backend (or press Enter)",
+                "local",
+                flag_hint="--board local|github|jira",
+            )
+        else:
+            selected_board = "local"
+
+        console.print(f"[cyan]Selected board backend:[/cyan] {selected_board}")
+
         tracker = StepTracker("Initialize Specify Project")
 
         tracker.add("precheck", "Check required tools")
@@ -857,6 +883,7 @@ def register(app: typer.Typer) -> None:
                     "integration": resolved_integration.key,
                     "here": here,
                     "script": selected_script,
+                    "board_provider": selected_board,
                     "feature_numbering": "sequential",
                     "speckit_version": get_speckit_version(),
                     "allow_symlinks": allow_symlinks,

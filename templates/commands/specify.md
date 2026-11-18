@@ -110,7 +110,7 @@ Given that feature description, do this:
 
 4. Load the resolved active `spec-template` file to understand required sections.
 
-5. **IF EXISTS**: Load `/memory/constitution.md` for project principles and governance constraints.
+5. **IF EXISTS**: Load `/memory/constitution.md` and `.specify/memory/learnings.md` (if present) for project principles and operational friction gates. Also consult `.specify/memory/GLOSSARY-MAP.md` when working in multi-package repositories, and attach `_Avoid_` negative synonym tags to ambiguous domain terms.
 
 6. Follow this execution flow:
     1. Parse user description from arguments
@@ -247,15 +247,17 @@ Report completion to the user with:
 
 ### Central SDLC Board Synchronization
 
-You **MUST** synchronize this feature with the project's central status board `.specify/BOARD.md`:
+You **MUST** synchronize this feature with the project's central status board `.specify/BOARD.md` (preserving all existing/past features — **No-Overwrite / No-Truncation Invariant**):
+- **First-Run Board Backend Selection (Skill-Native)**: If `"board_provider"` is not yet set in `.specify/init-options.json` (e.g., project was not initialized via interactive `specify init --board`), ask the user once which tracking backend they prefer (`local` [Default: `.specify/BOARD.md`], `github`, or `jira`), persist `"board_provider"` (zero secrets) into `.specify/init-options.json`, and do not re-ask on future runs.
 - If `.specify/BOARD.md` does not exist, initialize it with the standard Kanban sections:
   - `## 🛑 Blocked & Awaiting Human Input (@human)`
   - `## 🌫️ Fog of War (Not Yet Specified)`
   - `## 🟡 Ready for Work`
   - `## 🚀 In Progress`
   - `## 📋 Backlog & Clarification Needed`
-  - `## ✅ Done & Converged`
-- Add or update the feature entry under `## 📋 Backlog & Clarification Needed`:
+  - `## 🔍 Review & Quality Gate`
+  - `## ✅ Done & Converged (Historical Ledger)`
+- Add or update the feature entry under `## 📋 Backlog & Clarification Needed` without removing any other feature cards, then run `specify board sync` if `.specify/init-options.json` configures a remote `board_provider` (`github` or `jira`):
   ```markdown
   - [ ] **[{FEATURE_ID}]** {FEATURE_TITLE}
     - **Type**: `Feature`
