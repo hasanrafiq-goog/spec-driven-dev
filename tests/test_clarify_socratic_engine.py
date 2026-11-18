@@ -98,3 +98,13 @@ def test_clarify_originates_autonomous_questions_beyond_specify_markers(clarify_
     assert "AUTONOMOUS DEEP-DIVE INVARIANT" in clarify_template_text
     assert "Autonomous Question Origination Beyond Specify" in clarify_template_text
     assert "NOT limited to pre-existing `[NEEDS CLARIFICATION]` markers" in clarify_template_text
+
+
+def test_clarify_design_tree_and_frontier_architecture(clarify_template_text: str) -> None:
+    """Clarify template must frame questioning as a Design Tree with Frontier exploration and 70% specify ceiling."""
+    assert "Design Tree" in clarify_template_text
+    assert "Frontier" in clarify_template_text
+    assert "Finding _facts_ is your job, never the user's" in clarify_template_text
+    assert "Anti-Inflation Invariant" in clarify_template_text
+    assert "70%" in clarify_template_text
+    assert "frontier is empty" in clarify_template_text
